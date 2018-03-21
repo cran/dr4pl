@@ -1,21 +1,23 @@
 ---
-title: "dr4pl usage examples"
+title: "R package dr4pl usage examples"
+author: "Hyowon An, Justin T. Landis and Aburey G. Bailey"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{dr4pl usage examples}
   %\VignetteEngine{knitr::rmarkdown}
-  \usepackage[utf8]{inputenc}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, fig.width = 7)
 ```
 
-#packages
+#Installing packages
 ```{r}
+library(drc)
 library(dr4pl)
 library(ggplot2)
-library(drc)
+library(matrixcalc)
 ```
 
 #error cases

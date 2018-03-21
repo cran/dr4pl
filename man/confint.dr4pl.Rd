@@ -9,7 +9,7 @@
 \arguments{
 \item{object}{An object of the dr4pl class}
 
-\item{parm}{Parameters of the 4PL model}
+\item{parm}{Parameters of a 4PL model}
 
 \item{level}{Confidence level}
 
@@ -17,8 +17,8 @@
 }
 \value{
 A matrix of the confidence intervals in which each row represents a
-  parameter and each column represents the lower and upper bounds of the
-  confidence intervals of the corresponding parameters.
+parameter and each column represents the lower and upper bounds of the
+confidence intervals of the corresponding parameters.
 }
 \description{
 Compute the approximate confidence intervals of the parameters of a 
@@ -34,12 +34,15 @@ Please refer to Subsection 5.2.2 of Seber and Wild (1989).
 \examples{
 obj.dr4pl <- dr4pl(Response ~ Dose, data = sample_data_1)  # Fit a 4PL model to data
 
-confint(obj.dr4pl)  # Print conventional 95\% confidence intervals
-confint(obj.dr4pl, level = 0.99)  # Print 99\%confidence intervals
+## Use the data 'sample_data_1' to obtain confidence intervals.
+confint(obj.dr4pl)  # 95\% confidence intervals
+confint(obj.dr4pl, level = 0.99)  # 99\% confidence intervals
 
-theta <- coef(obj.dr4pl)
-theta[4] <- 0  # Set the lower asymptote to be zero
-confint(obj.dr4pl, parm = theta)  # Use our dr4pl object but different parameter estimates
+theta <- FindInitialParms(x = sample_data_1$Dose, y = sample_data_1$Response)
+
+# Use the same data 'sample_data_1' but different parameter estimates to obtain
+# confidence intervals.
+confint(obj.dr4pl, parm = theta)
 
 }
 \references{

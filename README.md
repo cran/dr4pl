@@ -81,11 +81,11 @@ summary(b)
 #>     method.init = "logistic", method.robust = "Tukey")
 #> 
 #> $coefficients
-#>                 Estimate         2.5 %       97.5 %
-#> UpperLimit  7.913355e+04  6.914512e+04 8.912197e+04
-#> IC50        4.258701e-13  4.073035e-25 4.452830e-01
-#> Slope      -7.370728e-02 -1.713284e-01 2.391385e-02
-#> LowerLimit -8.393064e+03 -3.401134e+04 1.722521e+04
+#>                 Estimate       StdErr       t.value p.value
+#> UpperLimit  7.913355e+04 2.538637e-01  3.117166e+05       0
+#> IC50        4.258701e-13 3.054816e-04  1.394094e-09       1
+#> Slope      -7.370728e-02 2.481119e-06 -2.970728e+04       0
+#> LowerLimit -8.393064e+03 6.511088e-01 -1.289042e+04       0
 #> 
 #> attr(,"class")
 #> [1] "summary.dr4pl"

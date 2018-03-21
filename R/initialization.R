@@ -1,33 +1,31 @@
-
-# Compute the Hill bounds based on initial parameter estimates and data.
-# 
-# 
-# 
-# @param x Vector of doses.
-# @param y Vector of responses.
-# @param theta Parameters of a 4PL model.
-# @param level Confidence level to be used in computing the Hill bounds.
-# @param use.Hessian Indicator of whether the Hessian matrix (TRUE) or the
-# gradient vector is used in confidence interval computation.
-# 
-# @return Data frame whose first column represents the bounds on the IC50 parameter
-# in log 10 scale and second column represents the bounds on the slope parameter.
-# 
-# @details This function computes the Hill bounds based on initial parameter
-# estimates and data. It basically computes the confidence intervals of the
-# true parameters based on the variance-covariance matrix of a given initial
-# parameter estimates. The half of a hessian matrix is used as a
-# variance-covariance matrix. If matrix inversion of the variance-covariance matrix
-# is infeasible, a variation of the method in Wang et al. (2010) is used. The
-# parameter \code{level} is only for simulation.
-# 
-# @author Hyowon An
-# 
-# @seealso \code{FindInitialParms}
-# 
-# @references \insertRef{Higham2002}{dr4pl} \insertRef{Wang2010}{dr4pl}
-# 
-# @export
+#' Compute the Hill bounds based on initial parameter estimates and data.
+#' @name FindHillBounds
+#' 
+#' @param x Vector of doses.
+#' @param y Vector of responses.
+#' @param theta Parameters of a 4PL model.
+#' @param level Confidence level to be used in computing the Hill bounds.
+#' @param use.Hessian Indicator of whether the Hessian matrix (TRUE) or the
+#' gradient vector is used in confidence interval computation.
+#' 
+#' @return Data frame whose first column represents the bounds on the IC50 parameter
+#' in log 10 scale and second column represents the bounds on the slope parameter.
+#' 
+#' @details This function computes the Hill bounds based on initial parameter
+#' estimates and data. It basically computes the confidence intervals of the
+#' true parameters based on the variance-covariance matrix of a given initial
+#' parameter estimates. The half of a hessian matrix is used as a
+#' variance-covariance matrix. If matrix inversion of the variance-covariance matrix
+#' is infeasible, a variation of the method in Wang et al. (2010) is used. The
+#' parameter \code{level} is only for simulation.
+#' 
+#' @author Hyowon An, \email{ahwbest@gmail.com}.
+#' 
+#' @seealso \code{\link{FindInitialParms}}, \code{\link{FindLogisticGrids}}.
+#' 
+#' @references \insertRef{Higham2002}{dr4pl} \insertRef{Wang2010}{dr4pl}
+#' 
+#' @export
 FindHillBounds <- function(x, y, theta,
                            use.Hessian = FALSE,
                            level = 0.9999) {
@@ -50,13 +48,13 @@ FindHillBounds <- function(x, y, theta,
     Hessian <- HessianLogIC50(retheta, x, y)
     
     # Obtain a positie definite approximation of the Hessian matrix
-    C.hat <- nearPD(Hessian)$mat/2
+    C.hat <- Matrix::nearPD(Hessian)$mat/2
   ## When the gradient vector is used.
   } else {
     
     deriv <- DerivativeFLogIC50(retheta, x)
     
-    C.hat <- nearPD(t(deriv)%*%deriv)$mat
+    C.hat <- Matrix::nearPD(t(deriv)%*%deriv)$mat
   }
   
   ind.mat.inv <- TRUE  # TRUE if matrix inversion is successful, FALSE otherwise
@@ -116,34 +114,36 @@ FindHillBounds <- function(x, y, theta,
   return(Hill.bounds)
 }
 
-# Compute the grids on the upper and lower asymptote parameters for the logistic
-# method based on initial parameter estimates and data.
-# 
-# @param x Vector of doses.
-# @param y Vector of responses.
-# @param retheta.init Parameters of a 4PL model among which the EC50 parameter is
-# in the log 10 dose scale.
-# @param use.Hessian Indicator of whether the Hessian matrix (TRUE) or the
-# gradient vector is used in confidence interval computation.
-# 
-# @return Data frame whose first column represents the grid on the upper asymptote
-# parameter and second column represents the grid o the lower asymptote.
-# 
-# @details This function computes the grids on the upper and lower asymptote
-# parameters based on initial parameter
-# estimates and data. It basically computes the confidence intervals of the
-# true parameters based on the variance-covariance matrix of the given initial
-# parameter estimates. If matrix inversion of the variance-covariance matrix
-# is infeasible, a variation of the method in Wang et al. (2010) is used.
-# 
-# @author Hyowon An
-# 
-# @seealso \code{FindHillBounds}, \code{FindInitialParms}
-# 
-# @references
-# \insertRef{Wang2010}{dr4pl}
-# 
-# @export
+#' Compute the grids on the upper and lower asymptote parameters for the logistic
+#' method based on initial parameter estimates and data.
+#'
+#' @name FindLogisticGrids
+#'  
+#' @param x Vector of doses.
+#' @param y Vector of responses.
+#' @param retheta.init Parameters of a 4PL model among which the EC50 parameter is
+#' in the log 10 dose scale.
+#' @param use.Hessian Indicator of whether the Hessian matrix (TRUE) or the
+#' gradient vector is used in confidence interval computation.
+#' 
+#' @return Data frame whose first column represents the grid on the upper asymptote
+#' parameter and second column represents the grid o the lower asymptote.
+#' 
+#' @details This function computes the grids on the upper and lower asymptote
+#' parameters based on initial parameter
+#' estimates and data. It basically computes the confidence intervals of the
+#' true parameters based on the variance-covariance matrix of the given initial
+#' parameter estimates. If matrix inversion of the variance-covariance matrix
+#' is infeasible, a variation of the method in Wang et al. (2010) is used.
+#' 
+#' @author Hyowon An
+#' 
+#' @seealso \code{FindHillBounds}, \code{FindInitialParms}
+#' 
+#' @references
+#' \insertRef{Wang2010}{dr4pl}
+#' 
+#' @export
 FindLogisticGrids <- function(x, y, retheta.init, use.Hessian = FALSE) {
   
   n <- length(x)  # Number of observations in data
@@ -157,7 +157,7 @@ FindLogisticGrids <- function(x, y, retheta.init, use.Hessian = FALSE) {
     Hessian <- HessianLogIC50(retheta.init, x, y)
     
     # Obtain a positie definite approximation of the Hessian matrix
-    C.hat <- nearPD(Hessian)$mat/2
+    C.hat <- Matrix::nearPD(Hessian)$mat/2
     ## When the gradient vector is used.
   } else {
     
@@ -232,23 +232,29 @@ FindLogisticGrids <- function(x, y, retheta.init, use.Hessian = FALSE) {
   return(logistic.grids)
 }
 
-# Find initial parameter estimates for a 4PL model.
-#
-# @param x Vector of dose levels
-# @param y Vector of responses
-# @param trend Indicator of whether the curve is a decreasing \eqn{\theta[3]<0} 
-# or increasing curve \eqn{\theta[3]>0}. See \code{\link{dr4pl}} for detailed 
-# explanation.
-# @param method.init Method of obtaining initial values of the parameters. See
-# \code{\link{dr4pl}} for detailed explanation.
-# @param method.robust Parameter to select loss function for the robust estimation 
-# method to be used to fit a model. See \code{\link{dr4pl}} for detailed
-# explanation.
-#
-# @return Initial parameter estimates of a 4PL model in the order of
-# 'Upper asymptote', 'IC50', 'Slope' and 'Lower asymptote'.
-# 
-FindInitialParms <- function(x, y, trend, method.init, method.robust) {
+#' Find initial parameter estimates for a 4PL model.
+#'
+#' @name FindInitialParms
+#'
+#' @param x Vector of dose levels
+#' @param y Vector of responses
+#' @param trend Indicator of whether the curve is a decreasing \eqn{\theta[3]<0} 
+#' or increasing curve \eqn{\theta[3]>0}. See \code{\link{dr4pl}} for detailed 
+#' explanation.
+#' @param method.init Method of obtaining initial values of the parameters. See
+#' \code{\link{dr4pl}} for detailed explanation.
+#' @param method.robust Parameter to select loss function for the robust estimation 
+#' method to be used to fit a model. See \code{\link{dr4pl}} for detailed
+#' explanation.
+#'
+#' @return Initial parameter estimates of a 4PL model in the order of the
+#' upper asymptote, IC50, Slope and lower asymptote parameters.
+#' 
+#' @export
+FindInitialParms <- function(x, y,
+                             trend = "auto",
+                             method.init = "Mead",
+                             method.robust = NULL) {
 
   n.grid.cells <- 25
   
@@ -446,7 +452,7 @@ FindInitialParms <- function(x, y, trend, method.init, method.robust) {
 # @param theta.1 Estimate of the upper asymptote parameter
 # @param theta.4 Estimate of the lower asymptote parameter
 #
-# @return Parameter estimates of a 4Pl model in the order from the upper asymptote,
+# @return Parameter estimates of a 4PL model in the order from the upper asymptote,
 # IC50, slope and lower asymptote.
 Logistic <- function(x, y, theta.1, theta.4) {
   

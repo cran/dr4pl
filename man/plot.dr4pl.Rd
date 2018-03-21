@@ -40,44 +40,45 @@ responses. The black solid line represents a dose-response curve. The blue fille
 circles represent data points and red triangles represent outliers.
 }
 \examples{
-ryegrass.dr4pl <- dr4pl::dr4pl(Response ~ Dose, data = sample_data_1)
+dr4pl.1 <- dr4pl(Response ~ Dose, data = sample_data_1)
 
-plot(ryegrass.dr4pl)
+plot(dr4pl.1)
 
-##Able to further edit plots
+## Able to further edit plots.
 library(ggplot2) #needed to change color to green
-ryegrass.dr4pl <- dr4pl::dr4pl(Response ~ Dose, 
-                               data = sample_data_1, 
-                               text.title = "Sample Data Plot")
+dr4pl.1 <- dr4pl(Response ~ Dose,
+                        data = sample_data_1,
+                        text.title = "Sample Data Plot")
 
-a <- plot(ryegrass.dr4pl) 
+a <- plot(dr4pl.1)
 a + geom_point(color = "green", size = 5)
 
-##Bring attention to outliers using parameter indices.outlier.
+## Bring attention to outliers using parameter indices.outlier.
+dr4pl.3 <- dr4pl(Response ~ Dose,
+                 data = drc_error_3,
+                 method.init = "Mead",
+                 method.robust = "absolute")
+plot(dr4pl.3, indices.outlier = c(90, 101))
 
-a <- dr4pl(Response ~ Dose, 
-           data = drc_error_3, 
-           method.init = "Mead", 
-           method.robust = "absolute" )
-plot(a, indices.outlier = c(90, 101))
-
-##Change the plot title default with parameter text.title
-
-ryegrass.dr4pl <- dr4pl::dr4pl(Response ~ Dose, 
-                               data = sample_data_1)
-plot(ryegrass.dr4pl, text.title = "My New Dose Response plot")
+## Change the plot title default with parameter text.title.
+dr4pl.1 <- dr4pl::dr4pl(Response ~ Dose,
+                        data = sample_data_1)
+plot(dr4pl.1, text.title = "My New Dose Response plot")
 
 ##Change the labels of the x and y axis to your need
-
-library(drc) #needed to load 'decontaminants' data set
-d <- subset(decontaminants, group \%in\% "hpc")
-e <- dr4pl(count~conc, data = d)
-plot(e, 
-     text.title = "hpc Decontaminants Plot", 
-     text.x = "Concentration", 
+library(drc)  # Needed to load 'decontaminants' data set
+data.hpc <- subset(decontaminants, group \%in\% "hpc")
+dr4pl.hpc <- dr4pl(count~conc, data = data.hpc)
+plot(dr4pl.hpc,
+     text.title = "hpc Decontaminants Plot",
+     text.x = "Concentration",
      text.y = "Count")
 
 }
 \author{
-Hyowon An, Justin T. Landis and Aubrey G. Bailey
+Hyowon An, \email{ahwbest@gmail.com}
+
+Justin T. Landis, \email{jtlandis314@gmail.com}
+
+Aubrey G. Bailey, \email{aubreybailey@gmail.com}
 }

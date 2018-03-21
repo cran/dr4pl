@@ -4,26 +4,34 @@
 \alias{gof.dr4pl}
 \title{Perform the goodness-of-fit (gof) test for the 4PL model.}
 \usage{
-gof.dr4pl(object)
+gof.dr4pl(object, n.signif.digit = 4)
 }
 \arguments{
 \item{object}{An object of the dr4pl class.}
+
+\item{n.signif.digit}{Number of significant digits after the decimal point to be 
+printed. The default value is 4, but users can change the value on their own.}
 }
 \value{
-Object of class `gof.dr4pl' which consists of .
+A list of results in the order of a F-statistic value, p-value and a
+degree of freedom.
 }
 \description{
 Perform the goodness-of-fit (gof) test for the 4PL model when there
   are at least two replicates for each dose level.
 }
 \details{
-Perform the goodness-of-fit (gof) test for the 4PL model in which the
-  mean response actually follws the 4 Parameter Logistic model. There should
-  be at least two replicates at each dose level. The test statistic follows the
-  Chi squared distributions with the (n - 4) degrees of freedom where n is the
-  number of observations and 4 is the number of parameters in the 4PL model. For
-  detailed explanation of the method, please refer to Subsection 2.1.5 of
-  Seber and Wild (1989).
+Perform a goodness-of-fit (gof) test for the goodness of the 4PL models
+for dose-response data. There should be at least two replicates at each dose
+level. The test statistic follows the F distribution with degress of freedom
+(n - 4) and (N - n) where N stands for the total number of observations and n
+stands for the number of dose levels. For detailed explanation of the method,
+please refer to Subsection 2.1.5 of Seber and Wild (1989).
+}
+\examples{
+obj.dr4pl <- dr4pl(Response ~ Dose, data = sample_data_4)  # Fit a 4PL model to data
+gof.dr4pl(obj.dr4pl)  # Print the goodness-of-fit test results
+
 }
 \references{
 \insertRef{Seber1989}{dr4pl}

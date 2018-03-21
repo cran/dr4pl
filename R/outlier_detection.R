@@ -1,21 +1,23 @@
 
-# Detect outliers by the method of Motulsky and Brown (2006).
-# 
-# @param residuals Vector of residuals from a robust fit.
-# 
-# @return Vector of indices of outliers in the input vector of residuals
-# 
-# @details This function detects outliers from a vector of residuals obtained from
-# a robust fit. The method used here is the same with Motulsky and Brown (2006)
-# except that the median absolute deviation is used instead of the sample quantile
-# based estimator suggested in that paper. Based on the False Discovery Rate (FDR)
-# a set of multiple outliers that have lower FDR's than a threshold are reported.
-# 
-# @author Hyowon An
-# 
-# @references \insertRef{Motulsky2006}{dr4pl}
-# 
-# @export
+#' Detect outliers by the method of Motulsky and Brown (2006).
+#' 
+#' @name OutlierDetection
+#' 
+#' @param residuals Vector of residuals from a robust fit.
+#' 
+#' @return Vector of indices of outliers in the input vector of residuals
+#' 
+#' @details This function detects outliers from a vector of residuals obtained from
+#' a robust fit. The method used here is the same with Motulsky and Brown (2006)
+#' except that the median absolute deviation is used instead of the sample quantile
+#' based estimator suggested in that paper. Based on the False Discovery Rate (FDR)
+#' a set of multiple outliers that have lower FDR's than a threshold are reported.
+#' 
+#' @author Hyowon An
+#' 
+#' @references \insertRef{Motulsky2006}{dr4pl}
+#' 
+#' @export
 OutlierDetection <- function(residuals) {
   
   n <- length(residuals)  # Number of observations

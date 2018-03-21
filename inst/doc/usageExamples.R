@@ -2,9 +2,10 @@
 knitr::opts_chunk$set(echo = TRUE, fig.width = 7)
 
 ## ------------------------------------------------------------------------
+library(drc)
 library(dr4pl)
 library(ggplot2)
-library(drc)
+library(matrixcalc)
 
 ## ------------------------------------------------------------------------
 ggplot(drc_error_1, aes(x = Dose, y = Response)) +

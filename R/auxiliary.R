@@ -7,13 +7,13 @@
 #' @name confint.dr4pl
 #'   
 #' @param object An object of the dr4pl class
-#' @param parm Parameters of the 4PL model
+#' @param parm Parameters of a 4PL model
 #' @param level Confidence level
 #' @param ... Other parameters to be passed
 #' 
 #' @return A matrix of the confidence intervals in which each row represents a
-#'   parameter and each column represents the lower and upper bounds of the
-#'   confidence intervals of the corresponding parameters.
+#' parameter and each column represents the lower and upper bounds of the
+#' confidence intervals of the corresponding parameters.
 #'   
 #' @details This function computes the approximate confidence intervals of the
 #' true parameters of a 4PL model based on the asymptotic normality of the least
@@ -24,12 +24,15 @@
 #' @examples
 #' obj.dr4pl <- dr4pl(Response ~ Dose, data = sample_data_1)  # Fit a 4PL model to data
 #'
-#' confint(obj.dr4pl)  # Print conventional 95% confidence intervals
-#' confint(obj.dr4pl, level = 0.99)  # Print 99%confidence intervals
+#' ## Use the data 'sample_data_1' to obtain confidence intervals.
+#' confint(obj.dr4pl)  # 95% confidence intervals
+#' confint(obj.dr4pl, level = 0.99)  # 99% confidence intervals
 #' 
-#' theta <- coef(obj.dr4pl)
-#' theta[4] <- 0  # Set the lower asymptote to be zero
-#' confint(obj.dr4pl, parm = theta)  # Use our dr4pl object but different parameter estimates
+#' theta <- FindInitialParms(x = sample_data_1$Dose, y = sample_data_1$Response)
+#' 
+#' # Use the same data 'sample_data_1' but different parameter estimates to obtain
+#' # confidence intervals.
+#' confint(obj.dr4pl, parm = theta)
 #' 
 #' @references
 #' \insertRef{Seber1989}{dr4pl}
@@ -47,7 +50,7 @@ confint.dr4pl <- function(object, parm = NULL, level = 0.95, ...) {
     retheta <- ParmToLog(object$parameters)
   } else if(length(parm)!=4||parm[2]<=0) {
     
-    stop("Input parameter estimates should be of length 4 and the IC50 estimate
+    stop("The input argument \"parm\" should be of length 4 and the IC50 estimate
          should be nonnegative.")
   } else {
     
@@ -60,26 +63,8 @@ confint.dr4pl <- function(object, parm = NULL, level = 0.95, ...) {
   f <- MeanResponseLogIC50(x, retheta)
   
   ind.mat.inv <- TRUE  # TRUE if matrix inversion is successful, FALSE otherwise
-  vcov.mat <- try(solve(C.hat), silent = TRUE)  # Inverse matrix
   
-  # If matrix inversion is infeasible, proceed with the Cholesky decomposition.
-  if(inherits(vcov.mat, "try-error")) {
-    
-    vcov.Chol <- try(chol(C.hat, silent = TRUE))  # Cholesky decomposition
-    
-    # If the Cholesky decomposition is infeasible, use an approximated positve
-    # definite Hessian matrix to obtain the variance-covariance matrix.
-    if(inherits(vcov.Chol, "try-error")) {
-      
-      ind.mat.inv <- FALSE
-      C.hat.pd <- nearPD(C.hat)$mat/2
-      vcov.mat <- solve(C.hat.pd)
-      
-    } else {
-      
-      vcov.mat <- chol2inv(vcov.Chol)
-    }
-  }
+  vcov.mat <- vcov(object, parm)  # Variance-covariance matrix
   
   if(!ind.mat.inv) {
     
@@ -141,21 +126,27 @@ coef.dr4pl <- function(object, ...) {
 #' @name gof.dr4pl
 #'   
 #' @param object An object of the dr4pl class.
+#' @param n.signif.digit Number of significant digits after the decimal point to be 
+#' printed. The default value is 4, but users can change the value on their own.
 #' 
-#' @return Object of class `gof.dr4pl' which consists of .
+#' @return A list of results in the order of a F-statistic value, p-value and a
+#' degree of freedom.
 #'   
-#' @details Perform the goodness-of-fit (gof) test for the 4PL model in which the
-#'   mean response actually follws the 4 Parameter Logistic model. There should
-#'   be at least two replicates at each dose level. The test statistic follows the
-#'   Chi squared distributions with the (n - 4) degrees of freedom where n is the
-#'   number of observations and 4 is the number of parameters in the 4PL model. For
-#'   detailed explanation of the method, please refer to Subsection 2.1.5 of
-#'   Seber and Wild (1989).
+#' @details Perform a goodness-of-fit (gof) test for the goodness of the 4PL models
+#' for dose-response data. There should be at least two replicates at each dose
+#' level. The test statistic follows the F distribution with degress of freedom
+#' (n - 4) and (N - n) where N stands for the total number of observations and n
+#' stands for the number of dose levels. For detailed explanation of the method,
+#' please refer to Subsection 2.1.5 of Seber and Wild (1989).
+#'
+#' @examples
+#' obj.dr4pl <- dr4pl(Response ~ Dose, data = sample_data_4)  # Fit a 4PL model to data
+#' gof.dr4pl(obj.dr4pl)  # Print the goodness-of-fit test results
 #'
 #' @references \insertRef{Seber1989}{dr4pl}
 #'
 #' @export
-gof.dr4pl <- function(object) {
+gof.dr4pl <- function(object, n.signif.digit = 4) {
   
   x <- object$data$Dose  # Dose levels
   y <- object$data$Response  # Responses
@@ -164,46 +155,58 @@ gof.dr4pl <- function(object) {
   n <- length(unique(x))  # Number of dose levels
   N <- object$sample.size  # Total number of observations
   p <- 4  # Number of parameters of the 4PL model is 4
-  # Numbers of observations per dose level
-  n.obs.per.dose <- tapply(X = y, INDEX = x, FUN = length)
   
   # Check whether function arguments are appropriate
   if(n <= 4) {
     
     stop("The number of dose levels should be larger than four to perform the
-         goodness-of-fit test for the 4PL model.")
+         goodness-of-fit test for the 4PL models.")
   }
-  if(any(n.obs.per.dose <= 1)) {
-    
-    stop("There should be more than one observation for each dose level to perform
-         the goodness-of-fit test.")
-  }
-  
+
   levels.x.sorted <- sort(unique(x))
   
   x.sorted <- sort(x)
   indices.x.sorted <- sort(x, index.return = TRUE)$ix
   y.sorted <- y[indices.x.sorted]
   
+  # Average response values for different dose levels
   y.bar <- tapply(X = y.sorted, INDEX = x.sorted, FUN = mean)
+  # Fitted response values
   y.fitted <- MeanResponse(levels.x.sorted, object$parameters)
   
+  # Numbers of observations per dose level
+  n.obs.per.dose <- tapply(X = y.sorted, INDEX = x.sorted, FUN = length)
+  
+  if(any(n.obs.per.dose <= 1)) {
+    
+    stop("There should be more than one observation for each dose level to perform
+         the goodness-of-fit test.")
+  }
   
   y.bar.rep <- rep(y.bar, times = n.obs.per.dose)
   
-  gof.numer <- J.i%*%(y.bar - y.fitted)^2/(n - p)
-  gof.denom <- sum((y.sorted - y.bar.rep)^2)/(N - n)
+  ### Compute statistics values for the goodness-of-fit test.
+  ss.lof <- J.i%*%(y.bar - y.fitted)^2  # Lack-of-fit sum of squares.
+  ss.error <- sum((y.sorted - y.bar.rep)^2)  # Pure-error sum of squares.
+  ss.vec <- c(ss.lof, ss.error)  # Vector of sums of squares.
   
-  gof.stat <- gof.numer/gof.denom
-  gof.pval <- pf(gof.stat, df1 = n - p, df2 = N - n, lower.tail = FALSE)
-  gof.df <- c(n - p, N - n)
+  df.gof <- c(n - p, N - n)  #  Degrees of freedom.
   
-  obj.gof.dr4pl <- list(gof.stat, gof.pval, gof.df)
-  names(obj.gof.dr4pl) <- c("Statistic", "pValue", "DegreesOfFreedom")
+  ms.vec <- ss.vec/df.gof
   
-  class(obj.gof.dr4pl) <- "gof.dr4pl"
+  gof.stat <- ms.vec[1]/ms.vec[2]
+  gof.pval <- pf(gof.stat, df1 = n - p, df2 = N - n, lower.tail = FALSE)  # p-value
+
+  result.tab <- cbind(round(df.gof, digits = n.signif.digit),
+                      round(ss.vec, digits = n.signif.digit),
+                      round(ms.vec, digits = n.signif.digit),
+                      c(round(gof.stat, digits = n.signif.digit), ""),
+                      c(round(gof.pval, digits = n.signif.digit), ""))
+  row.names(result.tab) <- c("Lack-of-fit", "Pure-error")
+  colnames(result.tab) <- c("d.f.", "Sum Sq", "Mean Sq", "F value", "Pr(>F)")
   
-  return(obj.gof.dr4pl)
+  cat("Goodnes-of-fit test\n\n")
+  print(noquote(result.tab))
 }
 
 #' @title Obtain Inhibitory Concentrations (IC) of a dose-response curve
@@ -276,45 +279,45 @@ IC <- function(object, inhib.percent) {
 #' @param breaks.x Vector of desired break points for the x-axis
 #' @param breaks.y Vector of desired break points for the y-axis
 #' @param ... All arguments that can normally be passed to ggplot.
-#' @examples
-#' ryegrass.dr4pl <- dr4pl::dr4pl(Response ~ Dose, data = sample_data_1)
-#'
-#' plot(ryegrass.dr4pl)
 #' 
-#' ##Able to further edit plots
-#' library(ggplot2) #needed to change color to green
-#' ryegrass.dr4pl <- dr4pl::dr4pl(Response ~ Dose, 
-#'                                data = sample_data_1, 
-#'                                text.title = "Sample Data Plot")
+#' @examples
+#' dr4pl.1 <- dr4pl(Response ~ Dose, data = sample_data_1)
 #'
-#' a <- plot(ryegrass.dr4pl) 
+#' plot(dr4pl.1)
+#' 
+#' ## Able to further edit plots.
+#' library(ggplot2) #needed to change color to green
+#' dr4pl.1 <- dr4pl(Response ~ Dose,
+#'                         data = sample_data_1,
+#'                         text.title = "Sample Data Plot")
+#'
+#' a <- plot(dr4pl.1)
 #' a + geom_point(color = "green", size = 5)
 #' 
-#' ##Bring attention to outliers using parameter indices.outlier.
+#' ## Bring attention to outliers using parameter indices.outlier.
+#' dr4pl.3 <- dr4pl(Response ~ Dose,
+#'                  data = drc_error_3,
+#'                  method.init = "Mead",
+#'                  method.robust = "absolute")
+#' plot(dr4pl.3, indices.outlier = c(90, 101))
 #' 
-#' a <- dr4pl(Response ~ Dose, 
-#'            data = drc_error_3, 
-#'            method.init = "Mead", 
-#'            method.robust = "absolute" )
-#' plot(a, indices.outlier = c(90, 101))
-#' 
-#' ##Change the plot title default with parameter text.title
-#' 
-#' ryegrass.dr4pl <- dr4pl::dr4pl(Response ~ Dose, 
-#'                                data = sample_data_1)
-#' plot(ryegrass.dr4pl, text.title = "My New Dose Response plot")
+#' ## Change the plot title default with parameter text.title.
+#' dr4pl.1 <- dr4pl::dr4pl(Response ~ Dose,
+#'                         data = sample_data_1)
+#' plot(dr4pl.1, text.title = "My New Dose Response plot")
 #' 
 #' ##Change the labels of the x and y axis to your need
-#' 
-#' library(drc) #needed to load 'decontaminants' data set
-#' d <- subset(decontaminants, group %in% "hpc")
-#' e <- dr4pl(count~conc, data = d)
-#' plot(e, 
-#'      text.title = "hpc Decontaminants Plot", 
-#'      text.x = "Concentration", 
+#' library(drc)  # Needed to load 'decontaminants' data set
+#' data.hpc <- subset(decontaminants, group %in% "hpc")
+#' dr4pl.hpc <- dr4pl(count~conc, data = data.hpc)
+#' plot(dr4pl.hpc,
+#'      text.title = "hpc Decontaminants Plot",
+#'      text.x = "Concentration",
 #'      text.y = "Count")
 #' 
-#' @author Hyowon An, Justin T. Landis and Aubrey G. Bailey
+#' @author Hyowon An, \email{ahwbest@gmail.com}
+#' @author Justin T. Landis, \email{jtlandis314@gmail.com}
+#' @author Aubrey G. Bailey, \email{aubreybailey@gmail.com}
 #' 
 #' @export
 plot.dr4pl <- function(x,
@@ -389,7 +392,7 @@ plot.dr4pl <- function(x,
   }
   
   a <- a + ggplot2::theme_bw()
-  
+  # Test
   # Set parameters for the titles and text / margin(top, right, bottom, left)
   a <- a + ggplot2::theme(plot.title = ggplot2::element_text(size = 20, margin = ggplot2::margin(0, 0, 10, 0)))
   a <- a + ggplot2::theme(axis.title.x = ggplot2::element_text(size = 16, margin = ggplot2::margin(15, 0, 0, 0)))
@@ -414,6 +417,11 @@ plot.dr4pl <- function(x,
 #' print(obj.dr4pl)
 print.dr4pl <- function(object, ...) {
   
+  if(!inherits(object, "dr4pl")) {
+    
+    stop("The object to be printed should be of the class \'dr4pl\'.")
+  }
+
   cat("Call:\n")
   print(object$call)
   
@@ -427,12 +435,12 @@ print.dr4pl <- function(object, ...) {
 #' @param ... all normally printable arguments
 #' 
 #' @examples
-#' library(drc) #needed for ryegrass data set
-#' ryegrass.dr4pl <- dr4pl(rootl ~ conc, data = ryegrass)
-#' print(summary(ryegrass.dr4pl))
+#' library(drc)  # Needed for the data set 'ryegras'
+#' dr4pl.ryegrass <- dr4pl(rootl ~ conc, data = ryegrass)
+#' print(summary(dr4pl.ryegrass))
 #' 
-#' obj.dr4pl <- dr4pl(Response ~ Dose, data = sample_data_7)
-#' print(summary(obj.dr4pl))
+#' dr4pl.7 <- dr4pl(Response ~ Dose, data = sample_data_7)
+#' print(summary(dr4pl.7))
 print.summary.dr4pl <- function(object, ...) {
   
   cat("Call:\n")
@@ -453,8 +461,8 @@ print.summary.dr4pl <- function(object, ...) {
 #'   
 #' @name vcov.dr4pl
 #'   
-#' @param object An object of the dr4pl class
-#' @param ... additional arguments that are not yet supported for dr4pl objects
+#' @param object An object of the dr4pl class.
+#' @param ... Other function arguments to be passed to the default 'vcov' function.
 #' 
 #' @return The variance-covariance matrix of the parameter estimators of a 4PL
 #' model whose columns are in the order of the upper asymptote, IC50, slope and lower
@@ -479,11 +487,21 @@ print.summary.dr4pl <- function(object, ...) {
 #' @export
 vcov.dr4pl <- function(object, ...) {
   
-  x <- object$data$Dose
-  y <- object$data$Response
+  x <- object$data$Dose  # Vector of dose levels
+  y <- object$data$Response  # Vector of responses
+  
   retheta <- ParmToLog(object$parameters)
 
   C.hat <- HessianLogIC50(retheta, x, y)/2  # Estimated variance-covariance matrix
+  
+  # If the Hessian matrix is not positive definite, use
+  if(!matrixcalc::is.positive.semi.definite(C.hat)) {
+    
+    Jacobian <- DerivativeFLogIC50(retheta, x)
+    C.hat <- t(Jacobian)%*%Jacobian
+  }
+  
+  C.hat <- Matrix::nearPD(C.hat)$mat
   
   n <- object$sample.size  # Number of observations in data
   f <- MeanResponseLogIC50(x, retheta)
@@ -501,9 +519,8 @@ vcov.dr4pl <- function(object, ...) {
     if(inherits(vcov.Chol, "try-error")) {
       
       ind.mat.inv <- FALSE
-      C.hat.pd <- nearPD(C.hat)$mat/2
+      C.hat.pd <- Matrix::nearPD(C.hat)$mat/2
       vcov.mat <- solve(C.hat.pd)
-      
     } else {
       
       vcov.mat <- chol2inv(vcov.Chol)

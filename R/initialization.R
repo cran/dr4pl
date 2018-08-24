@@ -1,4 +1,5 @@
-#' Compute the Hill bounds based on initial parameter estimates and data.
+#' @title FindHillBounds
+#' @description Compute the Hill bounds based on initial parameter estimates and data.
 #' @name FindHillBounds
 #' 
 #' @param x Vector of doses.
@@ -114,7 +115,8 @@ FindHillBounds <- function(x, y, theta,
   return(Hill.bounds)
 }
 
-#' Compute the grids on the upper and lower asymptote parameters for the logistic
+#' @title FindLogisticGrids
+#' @description Compute the grids on the upper and lower asymptote parameters for the logistic
 #' method based on initial parameter estimates and data.
 #'
 #' @name FindLogisticGrids
@@ -232,7 +234,8 @@ FindLogisticGrids <- function(x, y, retheta.init, use.Hessian = FALSE) {
   return(logistic.grids)
 }
 
-#' Find initial parameter estimates for a 4PL model.
+#' @title FindInitialParms
+#' @description Find initial parameter estimates for a 4PL model.
 #'
 #' @name FindInitialParms
 #'

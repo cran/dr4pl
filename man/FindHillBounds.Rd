@@ -2,7 +2,7 @@
 % Please edit documentation in R/initialization.R
 \name{FindHillBounds}
 \alias{FindHillBounds}
-\title{Compute the Hill bounds based on initial parameter estimates and data.}
+\title{FindHillBounds}
 \usage{
 FindHillBounds(x, y, theta, use.Hessian = FALSE, level = 0.9999)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/initialization.R
 \name{FindInitialParms}
 \alias{FindInitialParms}
-\title{Find initial parameter estimates for a 4PL model.}
+\title{FindInitialParms}
 \usage{
 FindInitialParms(x, y, trend = "auto", method.init = "Mead",
   method.robust = NULL)

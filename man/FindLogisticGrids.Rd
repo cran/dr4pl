@@ -2,8 +2,7 @@
 % Please edit documentation in R/initialization.R
 \name{FindLogisticGrids}
 \alias{FindLogisticGrids}
-\title{Compute the grids on the upper and lower asymptote parameters for the logistic
-method based on initial parameter estimates and data.}
+\title{FindLogisticGrids}
 \usage{
 FindLogisticGrids(x, y, retheta.init, use.Hessian = FALSE)
 }

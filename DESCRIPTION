@@ -1,9 +1,9 @@
 Package: dr4pl
 Type: Package
-Date: 2018-03-20
+Date: 2018-08-24
 Title: Dose Response Data Analysis using the 4 Parameter Logistic (4pl)
         Model
-Version: 1.1.1
+Version: 1.1.6
 Depends: R (>= 3.1.0)
 Authors@R: c(person("Justin T.", "Landis", rol = c("aut", "cre"), email = "jtlandis314@gmail.com"),
              person("Hyowon", "An", role = "aut", email = "ahwbest@gmail.com"),
@@ -19,10 +19,10 @@ Imports: ggplot2, Matrix, matrixcalc, tensor, Rdpack
 Suggests: drc, devtools, roxygen2, testthat, knitr, rmarkdown
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2018-03-21 17:44:10 UTC; aubreybailey
+Packaged: 2018-08-24 15:29:26 UTC; travis
 Author: Justin T. Landis [aut, cre],
   Hyowon An [aut],
   Aubrey G. Bailey [aut]
 Maintainer: Justin T. Landis <jtlandis314@gmail.com>
 Repository: CRAN
-Date/Publication: 2018-03-21 18:06:39 UTC
+Date/Publication: 2018-08-24 16:34:27 UTC

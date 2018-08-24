@@ -6,12 +6,18 @@
 \alias{dr4pl-package}
 \alias{dr4pl}
 \alias{dr4pl.formula}
+\alias{dr4pl.data.frame}
 \alias{dr4pl.default}
 \title{Fitting 4 Parameter Logistic (4PL) models to dose-response data.}
 \usage{
 dr4pl(...)
 
 \method{dr4pl}{formula}(formula, data = list(), init.parm = NULL,
+  trend = "auto", method.init = "Mead", method.robust = NULL,
+  method.optim = "Nelder-Mead", use.Hessian = FALSE, level = 0.9999,
+  failure.message = FALSE, ...)
+
+\method{dr4pl}{data.frame}(data, dose, response, init.parm = NULL,
   trend = "auto", method.init = "Mead", method.robust = NULL,
   method.optim = "Nelder-Mead", use.Hessian = FALSE, level = 0.9999,
   failure.message = FALSE, ...)
@@ -104,12 +110,16 @@ This function fits a 4 parameter logistic (4PL) model to dose-response
 \item \code{formula}: General 4PL model fitting function for analysis of
 dose-response relation.
 
+\item \code{data.frame}: Method for when formula argument is missing.
+dose and response arguments are necessary
+
 \item \code{default}: Used in the default case, supplying a single dose and 
 response variable
 }}
 
 \examples{
   ##Assign method.init = "logistic" to use logistic method of estimation.
+  ##default method
   a <- dr4pl(dose = sample_data_1$Dose,
              response = sample_data_1$Response,
              method.init = "logistic")
@@ -117,11 +127,18 @@ response variable
 
   ##Use default or Assign method.init = "Mead" to use Mead's method of estimation.
   # Use method.robust to select desired loss function
-  b <- dr4pl(Response~Dose, 
+  # formula method
+  b <- dr4pl(formula = Response~Dose, 
              data = sample_data_4,
              method.init = "Mead", 
              method.robust = "Tukey" )
   plot(b)
+  
+  #data.frame method
+  c <- dr4pl(data = sample_data_10,
+             dose = Dose,
+             response = Response)
+  plot(c)
 
   ##compatable with ggplot
   library(ggplot2) #load ggplot2

@@ -7,7 +7,7 @@ output:
 
 #build status:
 
-[![Build Status](https://travis-ci.org/aubreybailey/dr4pl.svg?branch=master)](https://travis-ci.org/aubreybailey/dr4pl)
+[![Build Status](https://travis-ci.org/DittmerLabUNC/dr4pl.svg?branch=master)](https://travis-ci.org/aubreybailey/dr4pl)
 
 #license:
 
@@ -19,7 +19,8 @@ output:
 
 #release version:
 
-[![packageversion](https://img.shields.io/badge/GitHub%20Package%20version-1.0.0-orange.svg?style=flat-square)](commits/master)
+[![packageversion](https://img.shields.io/badge/GitHub%20Package%20version-1.1.6-orange.svg?style=flat-square)](commits/master)
+
 
 ##dr4pl
 

@@ -37,11 +37,11 @@ test_that("Error messages are correctly drawn", {
                "Dose levels should be nonnegative.")
   data.test$x[1] <- 1
   
-  ### Check the errors of `FindInitialParms' are correctly drawn
+  ### Check if the errors of `FindInitialParms' are correctly drawn
   expect_error(FindInitialParms(x, y, "logistic", "abc"))
   expect_error(FindInitialParms(x, y, "abc", "absolute"))
   
-  ### Check the errors of `plot.dr4pl` are correctly drawn
+  ### Check if the errors of `plot.dr4pl` are correctly drawn
   expect_error(plot(dr4pl(y ~ x,
                           data = data.test,
                           method.init = "logistic"), text.title = 143.45),

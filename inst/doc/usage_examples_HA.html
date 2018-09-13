@@ -12,7 +12,7 @@
 
 <meta name="author" content="Hyowon An and Justin T. Landis" />
 
-<meta name="date" content="2018-08-24" />
+<meta name="date" content="2018-09-13" />
 
 <title>R package dr4pl usage examples</title>
 
@@ -280,7 +280,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 
 <h1 class="title toc-ignore">R package dr4pl usage examples</h1>
 <h4 class="author"><em>Hyowon An and Justin T. Landis</em></h4>
-<h4 class="date"><em>2018-08-24</em></h4>
+<h4 class="date"><em>2018-09-13</em></h4>
 
 
 
@@ -415,11 +415,11 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <p>Once you produce a curve you feel is representative of your data, you may get the parameters of the curve by using the summary function on the dr4pl variable.</p>
 <div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb40-1" data-line-number="1">summary.dr4pl<span class="fl">.3</span> &lt;-<span class="st"> </span><span class="kw">summary</span>(dr4pl<span class="fl">.3</span>)</a>
 <a class="sourceLine" id="cb40-2" data-line-number="2">summary.dr4pl<span class="fl">.3</span><span class="op">$</span>coefficients</a></code></pre></div>
-<pre><code>##                 Estimate       StdErr    t.value       p.value
-## UpperLimit 59858.0700194 1.328219e-01 450664.044 3.940157e-177
-## IC50           5.0794918 1.531608e-05 331644.346 2.454736e-172
-## Slope         -0.6117371 1.440712e-05 -42460.740 3.362528e-140
-## LowerLimit   980.8205686 1.354448e-01   7241.477 1.515083e-112</code></pre>
+<pre><code>##                 Estimate       StdErr         2.5 %        97.5 %
+## UpperLimit 59858.0700194 1.328219e-01 58678.1496415 61037.9903974
+## IC50           5.0794918 1.531608e-05     3.7133017     6.9483278
+## Slope         -0.6117371 1.440712e-05    -0.7397224    -0.4837518
+## LowerLimit   980.8205686 1.354448e-01  -222.4002527  2184.0413899</code></pre>
 <p>It is possible that you are interested in more than just the IC50 variable. Use the IC() function to produce the respective dose values.</p>
 <div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb42-1" data-line-number="1">values &lt;-<span class="st"> </span><span class="kw">IC</span>(dr4pl<span class="fl">.3</span>, <span class="kw">c</span>(<span class="dv">10</span>, <span class="dv">30</span>, <span class="dv">50</span>, <span class="dv">70</span>, <span class="dv">90</span>))</a>
 <a class="sourceLine" id="cb42-2" data-line-number="2">values</a></code></pre></div>

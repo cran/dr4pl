@@ -449,11 +449,11 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <p>Once you produce a curve you feel is representative of your data, you may get the parameters of the curve by using the summary function on the dr4pl variable.</p>
 <div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb23-1" data-line-number="1">b &lt;-<span class="st"> </span><span class="kw">summary</span>(a)</a>
 <a class="sourceLine" id="cb23-2" data-line-number="2">b<span class="op">$</span>coefficients</a></code></pre></div>
-<pre><code>##                 Estimate       StdErr    t.value       p.value
-## UpperLimit 59858.0700194 1.328219e-01 450664.044 3.940157e-177
-## IC50           5.0794918 1.531608e-05 331644.346 2.454736e-172
-## Slope         -0.6117371 1.440712e-05 -42460.740 3.362528e-140
-## LowerLimit   980.8205686 1.354448e-01   7241.477 1.515083e-112</code></pre>
+<pre><code>##                 Estimate       StdErr         2.5 %        97.5 %
+## UpperLimit 59858.0700194 1.328219e-01 58678.1496415 61037.9903974
+## IC50           5.0794918 1.531608e-05     3.7133017     6.9483278
+## Slope         -0.6117371 1.440712e-05    -0.7397224    -0.4837518
+## LowerLimit   980.8205686 1.354448e-01  -222.4002527  2184.0413899</code></pre>
 <p>It is possible that you are interested in more than just the IC50 variable. Use the IC() function to produce the respective Dose values.</p>
 <div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb25-1" data-line-number="1">values &lt;-<span class="st"> </span><span class="kw">IC</span>(a, <span class="kw">c</span>(<span class="dv">10</span>, <span class="dv">30</span>, <span class="dv">50</span>, <span class="dv">70</span>, <span class="dv">90</span>))</a>
 <a class="sourceLine" id="cb25-2" data-line-number="2">values</a></code></pre></div>

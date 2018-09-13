@@ -216,7 +216,7 @@ dr4pl.default <- function(dose,
                           level = 0.9999,
                           failure.message = FALSE,
                           ...) {
-
+  
   types.trend <- c("auto", "decreasing", "increasing")
   types.method.init <- c("logistic", "Mead")
   types.method.optim <- c("Nelder-Mead", "BFGS", "CG", "SANN")

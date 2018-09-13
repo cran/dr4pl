@@ -12,7 +12,7 @@
 \item{...}{all normal summary arguments}
 }
 \description{
-Print the dr4pl object summary.
+Print the summary of a dr4pl object.
 }
 \examples{
 obj.dr4pl <- dr4pl(Response ~ Dose, data = sample_data_5)  # Fit a 4PL model to data

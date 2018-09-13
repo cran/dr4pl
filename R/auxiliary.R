@@ -281,6 +281,7 @@ IC <- function(object, inhib.percent) {
 #' @param ... All arguments that can normally be passed to ggplot.
 #' 
 #' @examples
+#' \dontrun{
 #' dr4pl.1 <- dr4pl(Response ~ Dose, data = sample_data_1)
 #'
 #' plot(dr4pl.1)
@@ -314,6 +315,7 @@ IC <- function(object, inhib.percent) {
 #'      text.title = "hpc Decontaminants Plot",
 #'      text.x = "Concentration",
 #'      text.y = "Count")
+#' }
 #' 
 #' @author Hyowon An, \email{ahwbest@gmail.com}
 #' @author Justin T. Landis, \email{jtlandis314@gmail.com}
@@ -447,9 +449,8 @@ print.summary.dr4pl <- function(object, ...) {
   print(object$call)
   cat("\n")
   
-  printCoefmat(object$coefficients, P.values = TRUE, has.Pvalue = TRUE)
+  printCoefmat(object$coefficients, P.values = FALSE, has.Pvalue = FALSE)
 }
-
 
 #' @title Obtain the variance-covariance matrix of the parameter estimators of a
 #' 4PL model. 
@@ -545,10 +546,9 @@ vcov.dr4pl <- function(object, ...) {
   return(vcov.mat)
 }
 
-
 #' @title summary
 #'
-#' @description Print the dr4pl object summary.
+#' @description Print the summary of a dr4pl object.
 #' 
 #' @name summary.dr4pl
 #' 
@@ -569,10 +569,8 @@ summary.dr4pl <- function(object, ...) {
   t.stats <- coef(object)/std.err
   ci <- confint(object)
   
-  TAB <- data.frame(Estimate = object$parameters,
-               StdErr = std.err,
-               t.value = t.stats,
-               p.value = 2*pt(-abs(t.stats), df = object$sample.size - 4))
+  TAB <- cbind(data.frame(Estimate = object$parameters,
+                    StdErr = std.err), ci)
   
   res <- list(call = object$call,
               coefficients = TAB)

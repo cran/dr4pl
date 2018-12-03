@@ -5,8 +5,9 @@
 \title{Make a plot of a 4PL model curve and data}
 \usage{
 \method{plot}{dr4pl}(x, type.curve = "all",
-  text.title = "Dose-response plot", text.x = "Dose", text.y = "Response",
-  indices.outlier = NULL, breaks.x = NULL, breaks.y = NULL, ...)
+  text.title = "Dose-response plot", text.x = "Dose",
+  text.y = "Response", indices.outlier = NULL, breaks.x = NULL,
+  breaks.y = NULL, ...)
 }
 \arguments{
 \item{x}{`dr4pl' object whose data and mean response function will be plotted.}
@@ -40,6 +41,7 @@ responses. The black solid line represents a dose-response curve. The blue fille
 circles represent data points and red triangles represent outliers.
 }
 \examples{
+\dontrun{
 dr4pl.1 <- dr4pl(Response ~ Dose, data = sample_data_1)
 
 plot(dr4pl.1)
@@ -73,6 +75,7 @@ plot(dr4pl.hpc,
      text.title = "hpc Decontaminants Plot",
      text.x = "Concentration",
      text.y = "Count")
+}
 
 }
 \author{

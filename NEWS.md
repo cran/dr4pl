@@ -8,4 +8,4 @@ dr4pl function now allows 'data' argument when using 'dose' and 'response' argum
 
 # dr4pl 1.1.7
 
-print.summary.dr4pl function no long provides t-statistics and p-values but now prints 95% confidence intervals instead.
+print.summary.dr4pl function no long provides t-statistics and p-values but now prints 95% confidence intervals instead. Consolidated Vignettes.

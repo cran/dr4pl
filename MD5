@@ -1,14 +1,14 @@
-b147a5512192c584cf60f0818f729523 *DESCRIPTION
+c21f15ea30828cce68db62188d3bb31f *DESCRIPTION
 6dbd62eb69704ae52ece77e8b59c56b5 *NAMESPACE
-abe3bf98e5bcb1091c07683a0476849d *NEWS.md
+41d1cad662a1842dc31816caf9c50f47 *NEWS.md
 382c7c798799ce3e3b76a5d02856bae5 *R/auxiliary.R
 0bebce718b816e269d7afb555da98c06 *R/base.R
 34dcfe3195e1a458883355578884628a *R/data_sets.R
 5b094a0ee258b73ba42d492989e793f1 *R/initialization.R
 7a75b145c6acceae913198b02b88d61a *R/main.R
 10ff84e63c912b3d5572cf70003a67a1 *R/outlier_detection.R
-8c1fd3f55b0a25c4fa48b3e297c28072 *README.md
-33903d682a4efbe818200195cfc2c494 *build/partial.rdb
+838f98d604b1f67313bf856b38b5642d *README.md
+367537de694998bf5e542bbe7e49c14d *build/partial.rdb
 bdf56b0a4a89f92e7be187fcde14e057 *build/vignette.rds
 83578caf76a7febc6f9dccf24c2fd8f1 *data/drc_error_1.rda
 5d55b221e46939d5b4bdead185097ccf *data/drc_error_2.rda
@@ -30,7 +30,7 @@ bfca09cce0d93b8c79b13da370352c06 *data/sample_data_2.rda
 2041f3b8c3f5433c3d1772851b4311b7 *inst/REFERENCES.bib
 54390ffc30582bb17be1d292b3a5eee0 *inst/doc/walk_through_in_R.R
 5c3d891d43053d5866dded595d9eecd4 *inst/doc/walk_through_in_R.Rmd
-561c1642207463fe512ff743a23a28b8 *inst/doc/walk_through_in_R.html
+1b2fc0420f583f5b77f6f2c9e90bb49f *inst/doc/walk_through_in_R.html
 b8bc55c43d48ee64cd72a3589a45d182 *inst/image/example_solution-1.png
 99097efc82098ca8b9699bc2c06634dd *man/FindHillBounds.Rd
 8b60efc9582e45b24d466bfdd66c0e56 *man/FindInitialParms.Rd

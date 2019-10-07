@@ -30,7 +30,16 @@ dr4pl <- function(...)  UseMethod("dr4pl")
 #' form 'response ~ dose' or as a data frame with response values in first
 #' column and dose values in second column.
 #' @param data Data frame containing variables in the model.
-#' @param init.parm Vector of initial parameters to be optimized in the model.
+#' @param init.parm Either Null or a Vector of initial parameters to be optimized in the model.
+#' \itemize{
+#'   \item UpperLimit:  \eqn{\theta[1]}
+#'   \item IC50/EC50: \eqn{\theta[2]}
+#'   \item Slope: \eqn{\theta[3]}
+#'   \item LowerLimit: \eqn{\theta[4]}
+#' }
+#' dr4pl assumes \eqn{\theta[1]>\theta[4]}. Note that when using upperl and
+#' lowerl, the user may need to set this parameter because the estimated
+#' parameters may not be within the feasible region. 
 #' @param trend Indicator of whether a dose-response curve is a decreasing 
 #' \eqn{\theta[3]<0} or increasing curve \eqn{\theta[3]>0}. The default is "auto" 
 #' which indicates that the trend of the curve is automatically determined by
@@ -53,6 +62,18 @@ dr4pl <- function(...)  UseMethod("dr4pl")
 #' @param failure.message Indicator of whether a message indicating attainment of
 #' the Hill bounds and possible resolutions will be printed to the console (TRUE)
 #' or hidden (FALSE).
+#' @param upperl Either NULL or a numeric vector of length 4 that specifies the upper limit 
+#' for the initial parameters of \eqn{c(\theta[1],\theta[2],\theta[3],\theta[4])} during the
+#' optimization process. By default no upperl is assumed. If the user wants to constain only
+#' some parameter values, set desired numeric bound in the appropriate position and fill Inf
+#' to impose no upper bounds on other values. All upperl values must be greater than 
+#' corresponding initalized parameters.
+#' @param lowerl Either NULL or a numeric vector of length 4 that specifies the lower limit 
+#' for the initial parameters of \eqn{c(\theta[1],\theta[2],\theta[3],\theta[4])} during the
+#' optimization process. By default no lowerl is assumed. If the user wants to constain only
+#' some parameter values, set desired numeric bound in the appropriate position and fill -Inf
+#' to impose no lower bounds on other values. All lowerl values must be greater than 
+#' corresponding initalized parameters.
 #' @param ... Further arguments to be passed to \code{constrOptim}.
 #' 
 #' @return A 'dr4pl' object for which "confint", "gof", "print" and "summary"
@@ -92,11 +113,13 @@ dr4pl.formula <- function(formula,
                           init.parm = NULL,
                           trend = "auto",
                           method.init = "Mead",
-                          method.robust = NULL,
+                          method.robust = "squared",
                           method.optim = "Nelder-Mead",
                           use.Hessian = FALSE,
                           level = 0.9999,
                           failure.message = FALSE,
+                          upperl = NULL,
+                          lowerl = NULL,
                           ...) {
   
   mf <- model.frame(formula = formula, data = data)  # Model frame
@@ -123,6 +146,8 @@ dr4pl.formula <- function(formula,
                        use.Hessian = use.Hessian,
                        level = level,
                        failure.message = failure.message,
+                       upperl = upperl,
+                       lowerl = lowerl,
                        ...)
   
   obj$call <- match.call()
@@ -141,14 +166,16 @@ dr4pl.data.frame <- function(data,
                           init.parm = NULL,
                           trend = "auto",
                           method.init = "Mead",
-                          method.robust = NULL,
+                          method.robust = "squared",
                           method.optim = "Nelder-Mead",
                           use.Hessian = FALSE,
                           level = 0.9999,
                           failure.message = FALSE,
+                          upperl = NULL,
+                          lowerl = NULL,
                           ...) {
-  dose <- data[,deparse(substitute(dose))]
-  response <- data[,deparse(substitute(response))]
+  dose <- eval(substitute(dose),data)
+  response <- eval(substitute(response),data)
   obj <- dr4pl.default(dose = dose,
                        response = response,
                        init.parm = init.parm,
@@ -159,6 +186,8 @@ dr4pl.data.frame <- function(data,
                        use.Hessian = use.Hessian,
                        level = level,
                        failure.message = failure.message,
+                       upperl = upperl,
+                       lowerl = lowerl,
                        ...)
   
   obj$call <- match.call()
@@ -210,16 +239,18 @@ dr4pl.default <- function(dose,
                           init.parm = NULL,
                           trend = "auto",
                           method.init = "Mead",
-                          method.robust = NULL,
+                          method.robust = "squared",
                           method.optim = "Nelder-Mead",
                           use.Hessian = FALSE,
                           level = 0.9999,
                           failure.message = FALSE,
+                          upperl = NULL,
+                          lowerl = NULL,
                           ...) {
   
   types.trend <- c("auto", "decreasing", "increasing")
   types.method.init <- c("logistic", "Mead")
-  types.method.optim <- c("Nelder-Mead", "BFGS", "CG", "SANN")
+  types.method.optim <- c("Nelder-Mead", "BFGS", "CG", "L-BFGS-B", "SANN")
   
   ### Check errors in functions arguments
   if(!is.numeric(dose)||!is.numeric(response)) {
@@ -257,13 +288,15 @@ dr4pl.default <- function(dose,
                   method.robust = method.robust,
                   method.optim = method.optim,
                   use.Hessian = use.Hessian,
-                  level = level)
+                  level = level,
+                  upperl = upperl,
+                  lowerl = lowerl)
 
   obj$call <- match.call()
   class(obj) <- "dr4pl"
   
   # If any robust estimation method is indicated, report outliers to a user.
-  if(!is.null(method.robust)) {
+  if(!method.robust=="squared") {
     
     theta <- obj$parameters  # Robust parameter estimates
     residuals <- Residual(theta, dose, response)  # Residuals
@@ -281,7 +314,7 @@ dr4pl.default <- function(dose,
 
     ## Decide the method of robust estimation which is more robust than the method
     ## input by a user.
-    if(is.null(method.robust)) {
+    if(method.robust=="squared") {
       
       method.robust.new <- "absolute"
     } else if(is.element(method.robust, c("absolute", "Huber"))) {
@@ -303,7 +336,9 @@ dr4pl.default <- function(dose,
                            method.robust = method.robust.new,
                            method.optim = method.optim,
                            use.Hessian = use.Hessian,
-                           level = level)
+                           level = level,
+                           upperl = upperl,
+                           lowerl = lowerl)
 
     obj.robust$call <- match.call()
     class(obj.robust) <- "dr4pl"
@@ -379,6 +414,8 @@ dr4pl.default <- function(dose,
 #' @param use.Hessian Indicator of whether the Hessian matrix (TRUE) or the
 #' gradient vector is used in the Hill bounds.
 #' @param level Confidence level to be used in Hill bounds computation.
+#' @param upperl upper limit to init.parm
+#' @param lowerl lower limit to init.parm
 #' 
 #' @return List of final parameter estimates, name of robust estimation, loss value
 #' and so on.
@@ -389,7 +426,9 @@ dr4plEst <- function(dose, response,
                      method.optim,
                      method.robust,
                      use.Hessian,
-                     level) {
+                     level,
+                     upperl,
+                     lowerl) {
   
   convergence <- TRUE
   x <- dose  # Vector of dose values
@@ -417,6 +456,9 @@ dr4plEst <- function(dose, response,
     retheta.init[2] <- log10(init.parm[2])
     
     names(retheta.init) <- c("Upper limit", "Log10(IC50)", "Slope", "Lower limit")
+    if(init.parm[1]<init.parm[4]) {
+      stop(paste("Choose init.parm such that \u03B8\u2081 is greater than \u03B8\u2084. \n Choose \u03B8\u2083 >0 for increaseing trend and \u03B8\u2083 <0 for decreasing trend. \n"))
+    }
 
     constr.mat <- matrix(c(1, 0, 0, -1), nrow = 1, ncol = 4)
     constr.vec <- 0
@@ -431,6 +473,63 @@ dr4plEst <- function(dose, response,
       
       constr.mat <- rbind(constr.mat, matrix(c(0, 0, 1, 0), nrow = 1, ncol = 4))
       constr.vec <- c(constr.vec, 0)
+    }
+    
+    #Impose constraints on upper limit and or lower limit
+    #"upperl" and "lowerl"
+    if(!is.null(upperl)&!is.null(lowerl)){
+      if(any(upperl<lowerl)) {
+        stop("upperl must be greater than lowerl")
+      }
+    }
+    if(!is.null(upperl)){
+      if(is.numeric(upperl)&&(length(upperl)==4)) {
+        if(!is.infinite(upperl[1])){
+          constr.mat <- rbind(constr.mat, matrix(c(-1, 0, 0, 0), nrow = 1, ncol = 4))
+          constr.vec <- c(constr.vec, -1*upperl[1])
+        }
+        if(!is.infinite(upperl[2])){
+          constr.mat <- rbind(constr.mat, matrix(c(0, -1, 0, 0), nrow = 1, ncol = 4))
+          constr.vec <- c(constr.vec, -1*log10(upperl[2]))
+        }
+        if(!is.infinite(upperl[3])){
+          constr.mat <- rbind(constr.mat, matrix(c(0, 0, -1, 0), nrow = 1, ncol = 4))
+          constr.vec <- c(constr.vec, -1*upperl[3])
+        }
+        if(!is.infinite(upperl[4])){
+          constr.mat <- rbind(constr.mat, matrix(c(0, 0, 0, -1), nrow = 1, ncol = 4))
+          constr.vec <- c(constr.vec, -1*upperl[4])
+        }
+      } else {
+        stop("upperl must either be a numeric vector of length 4 or NULL")
+      }
+    } 
+    if(!is.null(lowerl)){
+      if(is.numeric(lowerl)&&(length(lowerl)==4)){
+        if(!is.infinite(lowerl[1])){
+          constr.mat <- rbind(constr.mat, matrix(c(1, 0, 0, 0), nrow = 1, ncol = 4))
+          constr.vec <- c(constr.vec, lowerl[1])
+        }
+        if(!is.infinite(lowerl[2])){
+          constr.mat <- rbind(constr.mat, matrix(c(0, 1, 0, 0), nrow = 1, ncol = 4))
+          constr.vec <- c(constr.vec, log10(lowerl[2]))
+        }
+        if(!is.infinite(lowerl[3])){
+          constr.mat <- rbind(constr.mat, matrix(c(0, 0, 1, 0), nrow = 1, ncol = 4))
+          constr.vec <- c(constr.vec, lowerl[3])
+        }
+        if(!is.infinite(lowerl[4])){
+          constr.mat <- rbind(constr.mat, matrix(c(0, 0, 0, 1), nrow = 1, ncol = 4))
+          constr.vec <- c(constr.vec, lowerl[4])
+        }
+      } else {
+        stop("lowerl must either be a numeric vector of length 4 or NULL")
+      }
+    }
+    
+    if(any(constr.mat%*%retheta.init<constr.vec)) {
+      
+      stop(paste("Initial parameter values are not in the interior of the feasible region.\n"))
     }
     
     # Fit a 4PL model to data
@@ -481,10 +580,68 @@ dr4plEst <- function(dose, response,
       constr.mat <- rbind(constr.mat, matrix(c(0, 0, 1, 0), nrow = 1, ncol = 4))
       constr.vec <- c(constr.vec, 0)
     }
+    #Impose constraints on upper limit and or lower limit
+    #"upperl" and "lowerl"
+    if(!is.null(upperl)&!is.null(lowerl)){
+      if(any(upperl<lowerl)) {
+        stop("upperl must be greater than lowerl")
+      }
+    }
+    if(!is.null(upperl)){
+      if(is.numeric(upperl)&&(length(upperl)==4)) {
+        if(!is.infinite(upperl[1])){
+          constr.mat <- rbind(constr.mat, matrix(c(-1, 0, 0, 0), nrow = 1, ncol = 4))
+          constr.vec <- c(constr.vec, -1*upperl[1])
+        }
+        if(!is.infinite(upperl[2])){
+          constr.mat <- rbind(constr.mat, matrix(c(0, -1, 0, 0), nrow = 1, ncol = 4))
+          constr.vec <- c(constr.vec, -1*log10(upperl[2]))
+        }
+        if(!is.infinite(upperl[3])){
+          constr.mat <- rbind(constr.mat, matrix(c(0, 0, -1, 0), nrow = 1, ncol = 4))
+          constr.vec <- c(constr.vec, -1*upperl[3])
+        }
+        if(!is.infinite(upperl[4])){
+          constr.mat <- rbind(constr.mat, matrix(c(0, 0, 0, -1), nrow = 1, ncol = 4))
+          constr.vec <- c(constr.vec, -1*upperl[4])
+        }
+      } else {
+        stop("upperl must either be a numeric vector of length 4 or NULL")
+      }
+    } 
+    if(!is.null(lowerl)){
+      if(is.numeric(lowerl)&&(length(lowerl)==4)){
+        if(!is.infinite(lowerl[1])){
+          constr.mat <- rbind(constr.mat, matrix(c(1, 0, 0, 0), nrow = 1, ncol = 4))
+          constr.vec <- c(constr.vec, lowerl[1])
+        }
+        if(!is.infinite(lowerl[2])){
+          constr.mat <- rbind(constr.mat, matrix(c(0, 1, 0, 0), nrow = 1, ncol = 4))
+          constr.vec <- c(constr.vec, log10(lowerl[2]))
+        }
+        if(!is.infinite(lowerl[3])){
+          constr.mat <- rbind(constr.mat, matrix(c(0, 0, 1, 0), nrow = 1, ncol = 4))
+          constr.vec <- c(constr.vec, lowerl[3])
+        }
+        if(!is.infinite(lowerl[4])){
+          constr.mat <- rbind(constr.mat, matrix(c(0, 0, 0, 1), nrow = 1, ncol = 4))
+          constr.vec <- c(constr.vec, lowerl[4])
+        }
+      } else {
+        stop("lowerl must either be a numeric vector of length 4 or NULL")
+      }
+    } 
+    
 
     if(any(constr.mat%*%retheta.init<constr.vec)) {
       
-      stop("Initial parameter values are not in the interior of the feasible region.")
+      stop(paste("Initial parameter values are not in the interior of the feasible region.\n",
+                 "Estimated Parameters:\n",
+                 " UpperLimit: ",theta.init[1],
+                 "\n ",ifelse(theta.init[3]<=0,"IC50: ","EC50: "), theta.init[2],
+                 "\n Slope: ", theta.init[3],
+                 "\n LowerLimit: ", theta.init[4],
+                 "\nConsider setting init.parm argument to be within specified bounds of upperl, lowerl, and trend\n"))
     }
 
     # Fit the 4PL model
@@ -516,10 +673,7 @@ dr4plEst <- function(dose, response,
   data.dr4pl <- data.frame(Dose = dose, Response = response)
 
   name.robust <- method.robust
-  if(is.null(method.robust)) {
-    
-    name.robust <- "squared"
-  }
+ 
   
   list(convergence = convergence,
        data = data.dr4pl,

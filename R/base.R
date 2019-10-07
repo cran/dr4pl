@@ -166,15 +166,15 @@ ErrFcn <- function(method.robust) {
 
   ### Check whether function arguments are appropriate.
   if(!(is.null(method.robust)||method.robust == "absolute"||method.robust == "Huber"||
-     method.robust == "Tukey")) {
+     method.robust == "Tukey"||method.robust == "squared")) {
     
-    stop("The robust estimation method should be one of NULL, \"absolute\",
+    stop("The robust estimation method should be one of \"squared\", \"absolute\",
          \"Huber\" or \"Tukey\".")
   }
   
   loss.fcn <- c()
 
-  if(is.null(method.robust)) {
+  if(method.robust=="squared") {
     loss.fcn <- SquaredLoss
   } else if(method.robust == "absolute") {
     loss.fcn <- AbsoluteLoss

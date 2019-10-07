@@ -12,19 +12,19 @@
 dr4pl(...)
 
 \method{dr4pl}{formula}(formula, data = list(), init.parm = NULL,
-  trend = "auto", method.init = "Mead", method.robust = NULL,
+  trend = "auto", method.init = "Mead", method.robust = "squared",
   method.optim = "Nelder-Mead", use.Hessian = FALSE, level = 0.9999,
-  failure.message = FALSE, ...)
+  failure.message = FALSE, upperl = NULL, lowerl = NULL, ...)
 
 \method{dr4pl}{data.frame}(data, dose, response, init.parm = NULL,
-  trend = "auto", method.init = "Mead", method.robust = NULL,
+  trend = "auto", method.init = "Mead", method.robust = "squared",
   method.optim = "Nelder-Mead", use.Hessian = FALSE, level = 0.9999,
-  failure.message = FALSE, ...)
+  failure.message = FALSE, upperl = NULL, lowerl = NULL, ...)
 
 \method{dr4pl}{default}(dose, response, init.parm = NULL,
-  trend = "auto", method.init = "Mead", method.robust = NULL,
+  trend = "auto", method.init = "Mead", method.robust = "squared",
   method.optim = "Nelder-Mead", use.Hessian = FALSE, level = 0.9999,
-  failure.message = FALSE, ...)
+  failure.message = FALSE, upperl = NULL, lowerl = NULL, ...)
 }
 \arguments{
 \item{...}{Further arguments to be passed to \code{constrOptim}.}
@@ -35,7 +35,16 @@ column and dose values in second column.}
 
 \item{data}{Data frame containing variables in the model.}
 
-\item{init.parm}{Vector of initial parameters to be optimized in the model.}
+\item{init.parm}{Either Null or a Vector of initial parameters to be optimized in the model.
+\itemize{
+  \item UpperLimit:  \eqn{\theta[1]}
+  \item IC50/EC50: \eqn{\theta[2]}
+  \item Slope: \eqn{\theta[3]}
+  \item LowerLimit: \eqn{\theta[4]}
+}
+dr4pl assumes \eqn{\theta[1]>\theta[4]}. Note that when using upperl and
+lowerl, the user may need to set this parameter because the estimated
+parameters may not be within the feasible region.}
 
 \item{trend}{Indicator of whether a dose-response curve is a decreasing 
 \eqn{\theta[3]<0} or increasing curve \eqn{\theta[3]>0}. The default is "auto" 
@@ -65,6 +74,20 @@ gradient vector is used in the Hill bounds.}
 \item{failure.message}{Indicator of whether a message indicating attainment of
 the Hill bounds and possible resolutions will be printed to the console (TRUE)
 or hidden (FALSE).}
+
+\item{upperl}{Either NULL or a numeric vector of length 4 that specifies the upper limit 
+for the initial parameters of \eqn{c(\theta[1],\theta[2],\theta[3],\theta[4])} during the
+optimization process. By default no upperl is assumed. If the user wants to constain only
+some parameter values, set desired numeric bound in the appropriate position and fill Inf
+to impose no upper bounds on other values. All upperl values must be greater than 
+corresponding initalized parameters.}
+
+\item{lowerl}{Either NULL or a numeric vector of length 4 that specifies the lower limit 
+for the initial parameters of \eqn{c(\theta[1],\theta[2],\theta[3],\theta[4])} during the
+optimization process. By default no lowerl is assumed. If the user wants to constain only
+some parameter values, set desired numeric bound in the appropriate position and fill -Inf
+to impose no lower bounds on other values. All lowerl values must be greater than 
+corresponding initalized parameters.}
 
 \item{dose}{Vector of dose levels}
 

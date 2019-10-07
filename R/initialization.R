@@ -257,14 +257,14 @@ FindLogisticGrids <- function(x, y, retheta.init, use.Hessian = FALSE) {
 FindInitialParms <- function(x, y,
                              trend = "auto",
                              method.init = "Mead",
-                             method.robust = NULL) {
+                             method.robust = "squared") {
 
   n.grid.cells <- 25
   
   ### Types of available function arguments
   types.trend <- c("auto", "decreasing", "increasing")
   types.method.init <- c("logistic", "Mead")
-  types.method.robust <- c("absolute", "Huber", "Tukey")
+  types.method.robust <- c("squared","absolute", "Huber", "Tukey")
 
   ### Check whether function arguments are appropriate.
   if(length(x) == 0 || length(y) == 0 || length(x) != length(y)) {
@@ -280,9 +280,9 @@ FindInitialParms <- function(x, y,
     
     stop("The initialization method name should be one of \"logistic\" and \"Mead\".")
   }
-  if(!(is.null(method.robust)||is.element(method.robust, types.method.robust))) {
+  if(!(is.null(method.robust)||is.element(method.robust, types.method.robust))) { #Should add depricated warning for NULL argument?
     
-    stop("The robust estimation method should be one of NULL, \"absolute\",
+    stop("The robust estimation method should be one of \"squared\", \"absolute\",
          \"Huber\" or \"Tukey\".")
   }
   

@@ -5,7 +5,7 @@
 \title{FindInitialParms}
 \usage{
 FindInitialParms(x, y, trend = "auto", method.init = "Mead",
-  method.robust = NULL)
+  method.robust = "squared")
 }
 \arguments{
 \item{x}{Vector of dose levels}

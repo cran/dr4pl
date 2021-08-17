@@ -4,22 +4,27 @@
 \alias{FindInitialParms}
 \title{FindInitialParms}
 \usage{
-FindInitialParms(x, y, trend = "auto", method.init = "Mead",
-  method.robust = "squared")
+FindInitialParms(
+  x,
+  y,
+  trend = "auto",
+  method.init = "Mead",
+  method.robust = "squared"
+)
 }
 \arguments{
 \item{x}{Vector of dose levels}
 
 \item{y}{Vector of responses}
 
-\item{trend}{Indicator of whether the curve is a decreasing \eqn{\theta[3]<0} 
-or increasing curve \eqn{\theta[3]>0}. See \code{\link{dr4pl}} for detailed 
+\item{trend}{Indicator of whether the curve is a decreasing \eqn{\theta[3]<0}
+or increasing curve \eqn{\theta[3]>0}. See \code{\link{dr4pl}} for detailed
 explanation.}
 
 \item{method.init}{Method of obtaining initial values of the parameters. See
 \code{\link{dr4pl}} for detailed explanation.}
 
-\item{method.robust}{Parameter to select loss function for the robust estimation 
+\item{method.robust}{Parameter to select loss function for the robust estimation
 method to be used to fit a model. See \code{\link{dr4pl}} for detailed
 explanation.}
 }

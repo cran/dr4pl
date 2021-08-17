@@ -4,12 +4,14 @@
 \alias{summary.dr4pl}
 \title{summary}
 \usage{
-\method{summary}{dr4pl}(object, ...)
+\method{summary}{dr4pl}(object, parm = NULL, ...)
 }
 \arguments{
 \item{object}{a dr4pl object to be summarized}
 
-\item{...}{all normal summary arguments}
+\item{parm}{parameters of the dr4pl object. Usually made with [dr4pl_theta]}
+
+\item{...}{additional arguments to be passed to [calculate.dr4pl]}
 }
 \description{
 Print the summary of a dr4pl object.

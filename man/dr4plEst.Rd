@@ -4,8 +4,20 @@
 \alias{dr4plEst}
 \title{Private function to fit the 4PL model to dose-response data}
 \usage{
-dr4plEst(dose, response, init.parm, trend, method.init, method.optim,
-  method.robust, use.Hessian, level, upperl, lowerl)
+dr4plEst(
+  dose,
+  response,
+  init.parm,
+  trend,
+  method.init,
+  method.optim,
+  method.robust,
+  use.Hessian,
+  level,
+  upperl,
+  lowerl,
+  ...
+)
 }
 \arguments{
 \item{dose}{Vector of dose levels}
@@ -15,11 +27,11 @@ dr4plEst(dose, response, init.parm, trend, method.init, method.optim,
 \item{init.parm}{Vector of initial parameters of the 4PL model supplied by a
 user.}
 
-\item{trend}{Indicator of whether a dose-response curve is a decreasing 
-\eqn{\theta[3]<0} or increasing curve \eqn{\theta[3]>0}. The default is "auto" 
+\item{trend}{Indicator of whether a dose-response curve is a decreasing
+\eqn{\theta[3]<0} or increasing curve \eqn{\theta[3]>0}. The default is "auto"
 which indicates that the trend of the curve is automatically determined by
-data. The option "decreasing" will impose a restriction \eqn{\theta[3]<=0} 
-while the option "increasing" will impose a restriction \eqn{\theta[3]>=0} in an 
+data. The option "decreasing" will impose a restriction \eqn{\theta[3]<=0}
+while the option "increasing" will impose a restriction \eqn{\theta[3]>=0} in an
 optimization process.}
 
 \item{method.init}{Method of obtaining initial values of the parameters.
@@ -30,7 +42,7 @@ method. The default option is the Mead method.}
 is directly delivered to the \code{constrOptim} function provided in the
 "base" package of R.}
 
-\item{method.robust}{Parameter to select loss function for the robust estimation 
+\item{method.robust}{Parameter to select loss function for the robust estimation
 method to be used to fit a model. The argument NULL indicates the sum of squares
 loss, "absolute" indicates the absolute deviation loss, "Huber" indicates Huber's
 loss and "Tukey" indicates Tukey's biweight loss.}
@@ -43,6 +55,8 @@ gradient vector is used in the Hill bounds.}
 \item{upperl}{upper limit to init.parm}
 
 \item{lowerl}{lower limit to init.parm}
+
+\item{...}{Further arguments to be passed to \code{constrOptim}.}
 }
 \value{
 List of final parameter estimates, name of robust estimation, loss value

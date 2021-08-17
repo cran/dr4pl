@@ -12,11 +12,11 @@ IC(object, inhib.percent)
 \item{inhib.percent}{Inhibited percentages at which thc IC values are obtained}
 }
 \value{
-IC values at the inhibited percentages provided by the argument 
+IC values at the inhibited percentages provided by the argument
 \code{inhib.percent}
 }
 \description{
-This function obtains estimates of the IC's of a dose-response 
+This function obtains estimates of the IC's of a dose-response
 curve. Typically the IC50 parameter is of interest, but sometimes IC10 or IC90
 are important aspects of a dose-response curve. By controlling the function
 argument, a user can obtain the IC's at various levels.

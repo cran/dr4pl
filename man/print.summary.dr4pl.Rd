@@ -4,10 +4,10 @@
 \alias{print.summary.dr4pl}
 \title{Print the dr4pl object summary to screen.}
 \usage{
-\method{print}{summary.dr4pl}(object, ...)
+\method{print}{summary.dr4pl}(x, ...)
 }
 \arguments{
-\item{object}{a dr4pl object to be summarized}
+\item{x}{a dr4pl object to be summarized}
 
 \item{...}{all normally printable arguments}
 }

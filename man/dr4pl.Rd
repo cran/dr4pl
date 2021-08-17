@@ -3,7 +3,6 @@
 \docType{package}
 \name{dr4pl}
 \alias{dr4pl}
-\alias{dr4pl-package}
 \alias{dr4pl.formula}
 \alias{dr4pl.data.frame}
 \alias{dr4pl.default}
@@ -11,20 +10,54 @@
 \usage{
 dr4pl(...)
 
-\method{dr4pl}{formula}(formula, data = list(), init.parm = NULL,
-  trend = "auto", method.init = "Mead", method.robust = "squared",
-  method.optim = "Nelder-Mead", use.Hessian = FALSE, level = 0.9999,
-  failure.message = FALSE, upperl = NULL, lowerl = NULL, ...)
+\method{dr4pl}{formula}(
+  formula,
+  data = list(),
+  init.parm = dr4pl_theta(),
+  trend = "auto",
+  method.init = "Mead",
+  method.robust = "squared",
+  method.optim = "Nelder-Mead",
+  use.Hessian = FALSE,
+  level = 0.9999,
+  failure.message = FALSE,
+  upperl = NULL,
+  lowerl = NULL,
+  ...
+)
 
-\method{dr4pl}{data.frame}(data, dose, response, init.parm = NULL,
-  trend = "auto", method.init = "Mead", method.robust = "squared",
-  method.optim = "Nelder-Mead", use.Hessian = FALSE, level = 0.9999,
-  failure.message = FALSE, upperl = NULL, lowerl = NULL, ...)
+\method{dr4pl}{data.frame}(
+  data,
+  dose,
+  response,
+  init.parm = dr4pl_theta(),
+  trend = "auto",
+  method.init = "Mead",
+  method.robust = "squared",
+  method.optim = "Nelder-Mead",
+  use.Hessian = FALSE,
+  level = 0.9999,
+  failure.message = FALSE,
+  upperl = NULL,
+  lowerl = NULL,
+  ...
+)
 
-\method{dr4pl}{default}(dose, response, init.parm = NULL,
-  trend = "auto", method.init = "Mead", method.robust = "squared",
-  method.optim = "Nelder-Mead", use.Hessian = FALSE, level = 0.9999,
-  failure.message = FALSE, upperl = NULL, lowerl = NULL, ...)
+\method{dr4pl}{default}(
+  dose,
+  response,
+  init.parm = dr4pl_theta(),
+  trend = "auto",
+  method.init = "Mead",
+  method.robust = "squared",
+  method.optim = "Nelder-Mead",
+  use.Hessian = FALSE,
+  level = 0.9999,
+  failure.message = FALSE,
+  upperl = NULL,
+  lowerl = NULL,
+  ...
+)
 }
 \arguments{
 \item{...}{Further arguments to be passed to \code{constrOptim}.}
@@ -35,7 +68,8 @@ column and dose values in second column.}
 
 \item{data}{Data frame containing variables in the model.}
 
-\item{init.parm}{Either Null or a Vector of initial parameters to be optimized in the model.
+\item{init.parm}{Either a call to [dr4pl_theta], or a Vector of initial parameters
+to be optimized in the model.
 \itemize{
   \item UpperLimit:  \eqn{\theta[1]}
   \item IC50/EC50: \eqn{\theta[2]}
@@ -46,18 +80,18 @@ dr4pl assumes \eqn{\theta[1]>\theta[4]}. Note that when using upperl and
 lowerl, the user may need to set this parameter because the estimated
 parameters may not be within the feasible region.}
 
-\item{trend}{Indicator of whether a dose-response curve is a decreasing 
-\eqn{\theta[3]<0} or increasing curve \eqn{\theta[3]>0}. The default is "auto" 
+\item{trend}{Indicator of whether a dose-response curve is a decreasing
+\eqn{\theta[3]<0} or increasing curve \eqn{\theta[3]>0}. The default is "auto"
 which indicates that the trend of the curve is automatically determined by
-data. The option "decreasing" will impose a restriction \eqn{\theta[3]<=0} 
-while the option "increasing" will impose a restriction \eqn{\theta[3]>=0} in an 
+data. The option "decreasing" will impose a restriction \eqn{\theta[3]<=0}
+while the option "increasing" will impose a restriction \eqn{\theta[3]>=0} in an
 optimization process.}
 
 \item{method.init}{Method of obtaining initial values of the parameters.
 If this parameter is left unassigned, a default "Mead" method will be used.
 Assign "logistic" to use the logistic method.}
 
-\item{method.robust}{Parameter to select loss function for the robust estimation 
+\item{method.robust}{Parameter to select loss function for the robust estimation
 method to be used to fit a model. The argument NULL indicates the sum of squares
 loss, "absolute" indicates the absolute deviation loss, "Huber" indicates Huber's
 loss and "Tukey" indicates Tukey's biweight loss.}
@@ -75,18 +109,18 @@ gradient vector is used in the Hill bounds.}
 the Hill bounds and possible resolutions will be printed to the console (TRUE)
 or hidden (FALSE).}
 
-\item{upperl}{Either NULL or a numeric vector of length 4 that specifies the upper limit 
+\item{upperl}{Either NULL or a numeric vector of length 4 that specifies the upper limit
 for the initial parameters of \eqn{c(\theta[1],\theta[2],\theta[3],\theta[4])} during the
 optimization process. By default no upperl is assumed. If the user wants to constain only
 some parameter values, set desired numeric bound in the appropriate position and fill Inf
-to impose no upper bounds on other values. All upperl values must be greater than 
+to impose no upper bounds on other values. All upperl values must be greater than
 corresponding initalized parameters.}
 
-\item{lowerl}{Either NULL or a numeric vector of length 4 that specifies the lower limit 
+\item{lowerl}{Either NULL or a numeric vector of length 4 that specifies the lower limit
 for the initial parameters of \eqn{c(\theta[1],\theta[2],\theta[3],\theta[4])} during the
 optimization process. By default no lowerl is assumed. If the user wants to constain only
 some parameter values, set desired numeric bound in the appropriate position and fill -Inf
-to impose no lower bounds on other values. All lowerl values must be greater than 
+to impose no lower bounds on other values. All lowerl values must be greater than
 corresponding initalized parameters.}
 
 \item{dose}{Vector of dose levels}
@@ -135,7 +169,7 @@ dose-response relation.
 \item \code{data.frame}: Method for when formula argument is missing.
 dose and response arguments are necessary
 
-\item \code{default}: Used in the default case, supplying a single dose and 
+\item \code{default}: Used in the default case, supplying a single dose and
 response variable
 }}
 
@@ -150,12 +184,12 @@ response variable
   ##Use default or Assign method.init = "Mead" to use Mead's method of estimation.
   # Use method.robust to select desired loss function
   # formula method
-  b <- dr4pl(formula = Response~Dose, 
+  b <- dr4pl(formula = Response~Dose,
              data = sample_data_4,
-             method.init = "Mead", 
+             method.init = "Mead",
              method.robust = "Tukey" )
   plot(b)
-  
+
   #data.frame method
   c <- dr4pl(data = sample_data_10,
              dose = Dose,
@@ -164,9 +198,9 @@ response variable
 
   ##compatable with ggplot
   library(ggplot2) #load ggplot2
-  c <- dr4pl(Response~Dose, 
-             data = drc_error_2, 
-             method.optim = "CG", 
+  c <- dr4pl(Response~Dose,
+             data = drc_error_2,
+             method.optim = "CG",
              trend = "decreasing" )
   d <- plot(c, x.breaks = c(.00135, .0135, .135, 1.35, 13.5))
   d + theme_grey()

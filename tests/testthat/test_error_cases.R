@@ -7,8 +7,9 @@ library(testthat)
 # -------------------------------------------------------------------------------
 ### Test
 #
-context("Test whether all the error messages of the R package are correctly drawn
-        when there are some errors in data or code")
+## context
+# Test whether all the error messages of the R package are correctly drawn
+# when there are some errors in data or code
 
 test_that("Error messages are correctly drawn", {
 
@@ -18,19 +19,19 @@ test_that("Error messages are correctly drawn", {
   data.test <- data.frame(x = c(0.0001, 0.001, 0.01, 0.1, 1),
                           y = c(10, 9, 5, 1, 0))
   
-  expect_error(dr4pl(y ~ x,
+  expect_error(suppressWarnings(dr4pl(y ~ x,
                      data = data.test,
                      init.parm = theta.init.trial,
-                     method.init = "logistic"),
-               "The IC50 parameter should be positive.")
+                     method.init = "logistic")),
+               "dr4pl theta_2 should be greater than 0.")
   expect_error(dr4pl(y ~ x,
                      data = data.test,
                      method.init = "abc"),
-               "The initialization method name should be one of \"logistic\" and \"Mead\".")
+               "The initialization method name should be one of: \"logistic\" and \"Mead\".")
   expect_error(dr4pl(y ~ x,
                      data = data.test,
                      trend = "abc"),
-               "The type of the \"trend\" parameter should be one of \"auto\", \"decreasing\" and \"increasing\".")
+               "The type of the \"trend\" parameter should be one of: \"auto\", \"decreasing\" and \"increasing\".")
   data.test$x[1] <- -1
   expect_error(dr4pl(y ~ x,
                      data = data.test),

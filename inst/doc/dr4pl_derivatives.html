@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Justin T. Landis and Alice Peng" />
+
+<meta name="date" content="2021-08-17" />
+
+<title>dr4pl derivatives</title>
+
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">dr4pl derivatives</h1>
+<h4 class="author">Justin T. Landis and Alice Peng</h4>
+<h4 class="date">2021-08-17</h4>
+
+
+
+<style type="text/css">
+.section {
+  max-width: 940px;
+  padding-left: 15px;
+  padding-right: 15px;
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>
+<p>This vignette is intended for the maintainer of the <code>dr4pl</code> package and to show how the first order and second order derivatives are calculated.</p>
+<details>
+<p><summary>The proof sections will sometimes make use of the following rules</summary></p>
+<div id="power-rule" class="section level4">
+<h4>power rule</h4>
+<p><span class="math display">\[
+\begin{align}
+  \tag{0.1}
+  \frac{\partial}{\partial x}[x^{n}] = n\cdot x ^{n-1}
+\end{align}
+\]</span></p>
+</div>
+<div id="product-rule" class="section level4">
+<h4>product rule</h4>
+<p><span class="math display">\[
+\begin{align}
+  \tag{0.2}
+  \frac{\partial}{\partial x}[g(x)\cdot h(x)] = \frac{\partial g}{\partial x}\cdot h(x) + g(x)\cdot \frac{\partial h}{\partial x}
+\end{align}
+\]</span></p>
+</div>
+<div id="chain-rule" class="section level4">
+<h4>chain rule</h4>
+<p><span class="math display">\[
+\begin{align}
+  \tag{0.3}
+  \frac{\partial}{\partial x} [g(h(x))] = \frac{\partial g}{\partial h}\cdot\frac{\partial h}{\partial x}
+\end{align}
+\]</span></p>
+</div>
+<div id="clairauts-theorem" class="section level4">
+<h4>Clairaut’s Theorem</h4>
+Given <span class="math inline">\(F(x,y)\)</span> is defined on a plane that contains points (a,b), and <span class="math inline">\(F_{xy}\)</span> and <span class="math inline">\(F_{yx}\)</span> are continuous on that plane then: <span class="math display">\[
+\begin{align}
+  \tag{0.4}
+  \frac{\partial^2 F}{\partial x \partial y} = \frac{\partial^2 F}{\partial y \partial x}
+\end{align}
+\]</span>
+</details>
+<p><code>dr4pl</code> is designed to optimise 4 parameters <span class="math inline">\(\theta = \langle \theta_1, \theta_2, \theta_3, \theta_4\rangle\)</span> where <span class="math inline">\({x, \theta_1, \theta_2,\theta_3} \in R\)</span>, and <span class="math inline">\(\theta_2 &gt; 0\)</span>. <code>dr4pl</code> takes in a <code>Dose</code> and <code>Response</code> values to optimize upon. Consider the following non-linear equation:</p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{1}
+  f(x|\theta) = \theta_1 + \frac{\theta_4 - \theta_1}{1 + \rho}
+\end{align}
+\]</span></p>
+<p><span class="math display">\[
+\begin{align}
+\tag{1.1}\rho = (\frac{z(x)}{\theta_2})^{\theta_3}
+\end{align}
+\]</span></p>
+<p>where <span class="math display">\[ z(x) = 10^x\]</span>.</p>
+<p>For clairity, the parameter <code>Dose</code> as passed into <code>dr4pl()</code> is <span class="math inline">\(z(x)\)</span>. <span class="math inline">\(z(x)\)</span> represents the linear dose level, and <span class="math inline">\(x\)</span> represents the <span class="math inline">\(\log_{10}\)</span> dose level.</p>
+<p>It is important to clairify that <code>dr4pl</code> is also constrained such that <span class="math inline">\(\theta_1 &gt; \theta_4\)</span>, thus forcing <span class="math inline">\(\theta_1\)</span> to be the <code>Upper Limit</code> and <span class="math inline">\(\theta_4\)</span> the <code>Lower Limit</code>. This also allows for consistency when examining the slope. Under these constraints the following is true:</p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{2}
+\text{if }\theta_3 &gt; 0, \text{ then} \lim_{x \to -\infty} f(x|\theta) = \theta_4, \lim_{x \to \infty} f(x|\theta) = \theta_1\\
+\text{if }\theta_3 &lt; 0, \text{ then} \lim_{x \to -\infty} f(x|\theta) = \theta_1, \lim_{x \to \infty} f(x|\theta) = \theta_4
+\end{align}
+\]</span></p>
+<p>We can reparameterize (1) by solely working in the <span class="math inline">\(\log_{10}\)</span> space.</p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{3}
+  \bar{f}(x|\bar{\theta}) = \theta_1 + \frac{\theta_4 - \theta_1}{1 + \bar{\rho}}
+\end{align}
+\]</span></p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{3.1}
+  \bar{\rho} = 10^{\theta_3\cdot(x-\bar{\theta_2})}
+\end{align}
+\]</span></p>
+<p>where <span class="math inline">\(\bar{\theta} = \langle\theta_1, \bar{\theta_2}, \theta_3, \theta_4\rangle\)</span>, <span class="math inline">\(\bar{\theta_2} = \log_{10}\theta_2\)</span> and <span class="math inline">\(\bar{\theta_2} \in R\)</span></p>
+<p><code>dr4pl</code> performs its optimization on the equation (3), and will transform <span class="math inline">\(\theta\)</span> into <span class="math inline">\(\bar{\theta}\)</span> internally. Most parameters given to <code>dr4pl</code> are expected to be in the linear space in previous version, like for the arguments <code>init.parm</code>, <code>upperl</code> and <code>lowerl</code>. As of <code>dr4pl v2.0.0</code>, users can specify if the argument passed to <code>init.parm</code> is <span class="math inline">\(\bar{\theta_2}\)</span> with the <code>dr4pl_theta()</code> function and its <code>isLog10</code> logical argument. Prior to <code>dr4pl v2.0.0</code>, all statistics were calculated under the reparameterization of equation (3). This has caused a bit of confusion as <code>dr4pl</code> was not clear what it was reporting. For example, prior to <code>dr4pl v2.0.0</code>, confidence intervals were calculated on <span class="math inline">\(\bar{\theta}\)</span>, but reported in linear space (the second parameter was exponentiated to make it more readable). In <code>dr4pl v2.0.0</code>, these parameters are reported in the same space they are calculated and labeled as such. To be consistent with the previous version the default will be to report <span class="math inline">\(\bar{\theta}\)</span>. The user will be able to request statistics to be calculated on <span class="math inline">\(\theta\)</span> by passing the untransformed <span class="math inline">\(\theta\)</span> into the <code>theta</code> argument of various functions like <code>calculate()</code>, <code>confint()</code>, <code>residuals()</code>, <code>summary()</code> and <code>vcov()</code>. (<code>calculate(obj, theta = coef(obj)))</code>)</p>
+<p>In order to support this, the derivatives had to be rewritten to support dispatch on the <code>&#39;dr4pl_param&#39;</code> class.</p>
+</div>
+<div id="first-derivatives-of-barfxbartheta" class="section level2">
+<h2>First Derivatives of <span class="math inline">\(\bar{f}(x|\bar{\theta})\)</span></h2>
+<p>I will start by defining the first derivatives of equation (3). This is because equation (3) and equation (1) are reparameterizations, their derivatives are almost identical except for when we derive with respects to either <span class="math inline">\(\theta_2\)</span> or <span class="math inline">\(\bar{\theta_2}\)</span>. Equation (3) has slightly easier derivatives (imo). I will begin by first defining some partial derivatives that will be handy.</p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{3.2}
+  \frac{\partial \bar{\rho}}{\partial \bar{\theta_2}} = -\ln(10)\cdot\bar{\rho}\cdot\theta_3
+\end{align}
+\]</span></p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{3.3}
+  \frac{\partial \bar{\rho}}{\partial \bar{\theta_3}} = (x - \bar{\theta_2})\cdot\ln(10)\cdot\bar{\rho}
+\end{align}
+\]</span></p>
+<div id="derivative-fracpartialbarfxbarthetapartialtheta_1" class="section level3">
+<h3>Derivative: <span class="math inline">\(\frac{\partial\bar{f}(x|\bar{\theta})}{\partial\theta_1}\)</span></h3>
+<p><span class="math display">\[
+\begin{align}
+  \tag{4}
+  \frac{\partial\bar{f}}{\partial\theta_1} = 1 - \frac{1}{1 + \bar{\rho}}
+\end{align}
+\]</span></p>
+<details>
+<p><summary>proof</summary> <span class="math display">\[
+\begin{align}
+  \tag{4.1}
+  \frac{\partial\bar{f}}{\partial\theta_1} = \frac{\partial}{\partial\theta_1}(\theta_1 + \frac{\theta_4 - \theta_1}{1 + \bar{\rho}})
+\end{align}
+\]</span></p>
+<span class="math display">\[
+\begin{align}
+  \tag{4.2}
+  = \frac{\partial}{\partial\theta_1}\theta_1 + \frac{\partial}{\partial\theta_1}(\frac{\theta_4 - \theta_1}{1 + \bar{\rho}}))
+\end{align}
+\]</span> <span class="math display">\[
+\begin{align}
+  \tag{4.3}
+  \frac{\partial\bar{f}}{\partial\theta_1} = 1 - \frac{1}{1 + \bar{\rho}}
+\end{align}
+\]</span>
+</details>
+</div>
+<div id="derivative-fracpartialbarfxbarthetapartialbartheta_2" class="section level3">
+<h3>Derivative: <span class="math inline">\(\frac{\partial\bar{f}(x|\bar{\theta})}{\partial\bar{\theta_2}}\)</span></h3>
+<p><span class="math display">\[
+\begin{align}
+  \tag{5}
+  \frac{\partial\bar{f}}{\partial\bar{\theta_2}} =\frac{\theta_4 - \theta_1}{(1 + \bar{\rho})^2}\cdot \ln(10)\cdot\bar{\rho}\cdot\theta_3
+\end{align}
+\]</span></p>
+<details>
+<p><summary>proof</summary></p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{5.1}
+  \frac{\partial\bar{f}}{\partial\bar{\theta_2}} = \frac{\partial}{\partial\bar{\theta_2}}[\theta_1 + \frac{\theta_4 - \theta_1}{1 + \bar{\rho}}]
+\end{align}
+\]</span></p>
+<p>we can rewrite the right hand side in the following manor by first removing the <span class="math inline">\(\theta_1\)</span> term and rewriting the quotient as a product.</p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{5.2}
+   = \frac{\partial}{\partial\bar{\theta_2}}[(\theta_4 - \theta_1)\cdot(1 + \bar{\rho})^{-1}]
+\end{align}
+\]</span></p>
+<p>by the product rule:</p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{5.3}
+  = \frac{\partial}{\partial\bar{\theta_2}}[\theta_4 - \theta_1]\cdot(1 + \bar{\rho})^{-1} + \frac{\partial}{\partial \bar{\theta_2}}[(1 + \bar{\rho})^{-1}]\cdot(\theta_4-\theta_1)
+\end{align}
+\]</span></p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{5.4}
+   = 0 + \frac{\partial}{\partial \bar{\theta_2}}[(1 + \bar{\rho})^{-1}]\cdot(\theta_4-\theta_1)
+\end{align}
+\]</span></p>
+<p>by the power and chain rule we get</p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{5.5}
+   = -(1 + \bar{\rho})^{-2}\cdot(\theta_4-\theta_1)\cdot \frac{\partial \bar{\rho}}{\partial \bar{\theta_2}}
+\end{align}
+\]</span></p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{5.6}
+   = -\frac{\theta_4-\theta_1}{(1 + \bar{\rho})^{2}}\cdot \frac{\partial \bar{\rho}}{\partial \bar{\theta_2}}
+\end{align}
+\]</span></p>
+<p>by equation (3.2) we arrive at</p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{5.7}
+  \frac{\partial\bar{f}}{\partial\bar{\theta_2}} =\frac{\theta_4 - \theta_1}{(1 + \bar{\rho})^2}\cdot \ln(10)\cdot\bar{\rho}\cdot\theta_3
+\end{align}
+\]</span></p>
+</details>
+</div>
+<div id="derivative-fracpartialbarfxbarthetapartialtheta_3" class="section level3">
+<h3>Derivative: <span class="math inline">\(\frac{\partial\bar{f}(x|\bar{\theta})}{\partial\theta_3}\)</span></h3>
+<p><span class="math display">\[
+\begin{align}
+  \tag{6}
+  \frac{\partial\bar{f}}{\partial\theta_3} = -\frac{\theta_4 - \theta_1}{(1 + \bar{\rho})^2}\cdot  (x - \bar{\theta_2})\cdot\ln(10)\cdot\bar{\rho}
+\end{align}
+\]</span></p>
+<details>
+<p><summary>proof</summary></p>
+<p>The proof to equation 6 has the same steps in equations (5.1) - (5.6), except we are deriving with respects to <span class="math inline">\(\theta_3\)</span></p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{6.1}
+  \frac{\partial\bar{f}}{\partial\theta_3} = \frac{\partial}{\partial\theta_3}[\theta_1 + \frac{\theta_4 - \theta_1}{1 + \bar{\rho}}]
+\end{align}
+\]</span></p>
+<p>we can rewrite the right hand side in the following manor by first removing the <span class="math inline">\(\theta_1\)</span> term and rewriting the quotient as a product.</p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{6.2}
+   = \frac{\partial}{\partial\theta_3}[(\theta_4 - \theta_1)\cdot(1 + \bar{\rho})^{-1}]
+\end{align}
+\]</span></p>
+<p>by the product rule:</p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{6.3}
+  = \frac{\partial}{\partial\theta_3}[\theta_4 - \theta_1]\cdot(1 + \bar{\rho})^{-1} + \frac{\partial}{\partial \theta_3}[(1 + \bar{\rho})^{-1}]\cdot(\theta_4-\theta_1)
+\end{align}
+\]</span></p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{6.4}
+   = 0 + \frac{\partial}{\partial \theta_3}[(1 + \bar{\rho})^{-1}]\cdot(\theta_4-\theta_1)
+\end{align}
+\]</span></p>
+<p>by the power and chain rule we get</p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{6.5}
+   = -(1 + \bar{\rho})^{-2}\cdot(\theta_4-\theta_1)\cdot \frac{\partial \bar{\rho}}{\partial \theta_3}
+\end{align}
+\]</span></p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{6.6}
+   = -\frac{\theta_4-\theta_1}{(1 + \bar{\rho})^{2}}\cdot \frac{\partial \bar{\rho}}{\partial \theta_3}
+\end{align}
+\]</span></p>
+<p>by equation (3.3) we arrive at</p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{6.7}
+  \frac{\partial\bar{f}}{\partial\theta_3} =-\frac{\theta_4 - \theta_1}{(1 + \bar{\rho})^2}\cdot(x - \bar{\theta_2})\cdot\ln(10)\cdot\bar{\rho}
+\end{align}
+\]</span></p>
+</details>
+</div>
+<div id="derivative-fracpartialbarfxbarthetapartialtheta_4" class="section level3">
+<h3>Derivative: <span class="math inline">\(\frac{\partial\bar{f}(x|\bar{\theta})}{\partial\theta_4}\)</span></h3>
+<p><span class="math display">\[
+\begin{align}
+  \tag{7}
+  \frac{\partial\bar{f}}{\partial\theta_4} = \frac{1}{1 + \bar{\rho}}
+\end{align}
+\]</span></p>
+<details>
+<p><summary>proof</summary> <span class="math display">\[
+\begin{align}
+  \tag{7.1}
+  \frac{\partial\bar{f}}{\partial\theta_4} = \frac{\partial}{\partial\theta_4}(\theta_1 + \frac{\theta_4 - \theta_1}{1 + \bar{\rho}})
+\end{align}
+\]</span></p>
+<span class="math display">\[
+\begin{align}
+  \tag{7.2}
+  = \frac{\partial}{\partial\theta_4}\theta_1 + \frac{\partial}{\partial\theta_4}(\frac{\theta_4 - \theta_1}{1 + \bar{\rho}}))
+\end{align}
+\]</span> <span class="math display">\[
+\begin{align}
+  \tag{7.3}
+  \frac{\partial\bar{f}}{\partial\theta_4} = \frac{1}{1 + \bar{\rho}}
+\end{align}
+\]</span>
+</details>
+</div>
+</div>
+<div id="derivatives-of-fxtheta" class="section level2">
+<h2>Derivatives of <span class="math inline">\(f(x|\theta)\)</span></h2>
+<p>As I mentioned in the previous section, may of the partial derivatives are the same, so I will not specify them again. In fact, the only derivative that is different is when deriving with respects to <span class="math inline">\(\theta_2\)</span> as opposed to <span class="math inline">\(\bar{\theta_2}\)</span>. I want to clairify that <span class="math inline">\(\bar{\rho} = \rho\)</span> and that I only make the distinction to communicate which space we are in.</p>
+<p>The solution is extremely close to equation (5)</p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{8}
+  \frac{\partial f}{\partial\theta_2} =\frac{\theta_3}{\theta_2}\cdot\frac{\theta_4 - \theta_1}{(1 + \rho)^2}\cdot \rho
+\end{align}
+\]</span></p>
+<details>
+<p><summary>proof</summary></p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{8.1}
+  \frac{\partial f}{\partial\theta_2} = \frac{\partial f}{\partial \bar{\theta_2}}\cdot\frac{\partial \bar{\theta_2}}{\partial \theta_2}
+\end{align}
+\]</span></p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{8.1.1}
+  \frac{\partial \bar{\theta_2}}{\partial \theta_2} = \log_{10} e \cdot \frac{1}{\theta_2} = \frac{1}{\ln10\cdot\theta_2}
+\end{align}
+\]</span></p>
+<p>and by equation (5) we arrive at</p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{8.2}
+  \frac{\partial f}{\partial\theta_2} = \frac{\partial f}{\partial \bar{\theta_2}}\cdot\frac{\partial \bar{\theta_2}}{\partial \theta_2}
+\end{align}
+\]</span></p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{8.3}
+  = \frac{\theta_4 - \theta_1}{(1 + \bar{\rho})^2}\cdot \ln(10)\cdot\bar{\rho}\cdot\theta_3\cdot\frac{1}{\ln10\cdot\theta_2}
+\end{align}
+\]</span></p>
+<p><span class="math display">\[
+\begin{align}
+=\frac{\theta_3}{\theta_2}\cdot\frac{\theta_4 - \theta_1}{(1 + \rho)^2}\cdot \rho
+\end{align}
+\]</span></p>
+</details>
+</div>
+<div id="second-derivatives-of-barfxbartheta" class="section level2">
+<h2>Second Derivatives of <span class="math inline">\(\bar{f}(x|\bar{\theta})\)</span></h2>
+<p>Due to the equivalence of equation (0.4), we do not need to compute all the the partial derivatives, only 10 of the 16 combinations. Again, I will start with equation (3) and then show the differences with equation (1) when applicable. This only is necessary when working with <span class="math inline">\(\bar{\theta_2}\)</span> which would otherwise be <span class="math inline">\(\theta_2\)</span> if using equation (1).</p>
+<p>Again, to make computation easier lets remember the partial derivatives of <span class="math inline">\(\bar{\rho}\)</span>, specifically equation (3.2) and (3.3).</p>
+<p>for brevity, I will refer to equation (3) via <span class="math inline">\(f\)</span> instead of <span class="math inline">\(\bar{f}\)</span></p>
+<div id="derivative-fracpartialpartial-theta_1fracpartial-fpartial-theta_1" class="section level3">
+<h3>Derivative: <span class="math inline">\(\frac{\partial}{\partial \theta_1}[\frac{\partial f}{\partial \theta_1}]\)</span></h3>
+<p><span class="math display">\[
+\begin{align}
+  \tag{8}
+  \frac{\partial^2 f}{\partial \theta_1^2} = 0
+\end{align}
+\]</span></p>
+<details>
+<p><summary>proof</summary></p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{8.1}
+  \frac{\partial^2 f}{\partial \theta_1^2} = \frac{\partial}{\partial \theta_1}[\frac{\partial f}{\partial \theta_1}]
+\end{align}
+\]</span></p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{8.2}
+  = \frac{\partial}{\partial \theta_1}[1 - \frac{1}{1 + \bar{\rho}}]
+\end{align}
+\]</span></p>
+<p><span class="math display">\[
+\begin{align}
+  \tag{8.3}
+  = 0
+\end{align}
+\]</span></p>
+</details>
+</div>
+<div id="derivative-fracpartialpartial-theta_1fracpartial-fpartial-bartheta_2" class="section level3">
+<h3>Derivative: <span class="math inline">\(\frac{\partial}{\partial \theta_1}[\frac{\partial f}{\partial \bar{\theta_2}}]\)</span></h3>
+<p><span class="math display">\[
+\begin{align}
+  \tag{9}
+  \frac{\partial^2 f}{\partial \theta_1\partial\bar{\theta_2}} = \frac{\partial \bar{\rho}}{\partial\bar{\theta_2}}\cdot\frac{1}{(1+\bar{\rho})^2}
+\end{align}
+\]</span></p>
+<details>
+<p><summary>proof</summary> <span class="math display">\[
+\begin{align}
+    \tag{9.1}
+    \frac{\partial^2 f}{\partial \theta_1\partial\bar{\theta_2}} = \frac{\partial}{\partial \theta_1}[\frac{\partial f}{\partial \bar{\theta_2}}]
+\end{align}
+\]</span></p>
+<p>by equation (5.6)</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{9.2}
+    = \frac{\partial}{\partial \theta_1}[-\frac{\theta_4-\theta_1}{(1 + \bar{\rho})^{2}}\cdot \frac{\partial \bar{\rho}}{\partial \bar{\theta_2}}]
+\end{align}
+\]</span></p>
+<p>Since neither equation (3.2) nor <span class="math inline">\(\bar{\rho}\)</span> depends on <span class="math inline">\(\theta_1\)</span>, we can treat them as a constants</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{9.3}
+    = -\frac{1}{(1+\bar{\rho})^2}\cdot \frac{\partial \bar{\rho}}{\partial \bar{\theta_2}}\cdot\frac{\partial}{\partial \theta_1}[\theta_4-\theta_1]
+\end{align}
+\]</span></p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{9.4}
+  = \frac{\partial \bar{\rho}}{\partial\bar{\theta_2}}\cdot\frac{1}{(1+\bar{\rho})^2}
+\end{align}
+\]</span></p>
+</details>
+</div>
+<div id="derivative-fracpartialpartial-theta_1fracpartial-fpartial-theta_3" class="section level3">
+<h3>Derivative: <span class="math inline">\(\frac{\partial}{\partial \theta_1}[\frac{\partial f}{\partial \theta_3}]\)</span></h3>
+<p><span class="math display">\[
+\begin{align}
+    \tag{10}
+    \frac{\partial^2 f}{\partial\theta_1\partial\theta_3} = \frac{\partial\bar{\rho}}{\partial\theta_3}\cdot\frac{1}{(1+\bar{\rho})^2}
+\end{align}
+\]</span></p>
+<details>
+<p><summary>proof</summary></p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{10.1}
+    \frac{\partial^2 f}{\partial\theta_1\partial\theta_3} = \frac{\partial}{\partial\theta_1}[\frac{\partial f}{\partial\theta_3}]
+\end{align}
+\]</span></p>
+<p>by equation (6.6)</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{10.2}
+    =\frac{\partial}{\partial\theta_1}[-\frac{\theta_4-\theta_1}{(1 + \bar{\rho})^{2}}\cdot \frac{\partial \bar{\rho}}{\partial \theta_3}]
+\end{align}
+\]</span></p>
+<p>by similar logic shown in 9.2-9.3, we can rewrite constants</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{10.2}
+    =-\frac{1}{(1 + \bar{\rho})^{2}}\cdot \frac{\partial \bar{\rho}}{\partial \theta_3}\cdot\frac{\partial}{\partial\theta_1}[\theta_4-\theta_1]
+\end{align}
+\]</span></p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{10.3}
+    = \frac{\partial\bar{\rho}}{\partial\theta_3}\cdot\frac{1}{(1+\bar{\rho})^2}
+\end{align}
+\]</span></p>
+</details>
+</div>
+<div id="derivative-fracpartialpartial-theta_1fracpartial-fpartial-theta_4" class="section level3">
+<h3>Derivative: <span class="math inline">\(\frac{\partial}{\partial \theta_1}[\frac{\partial f}{\partial \theta_4}]\)</span></h3>
+<p><span class="math display">\[
+\begin{align}
+    \tag{11}
+    \frac{\partial^2 f}{\partial\theta_1\partial\theta_4} = 0
+\end{align}
+\]</span></p>
+<details>
+<p><summary>proof</summary></p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{11.1}
+    \frac{\partial^2 f}{\partial\theta_1\partial\theta_4} = \frac{\partial}{\partial\theta_1}[\frac{\partial f}{\partial\theta_4}]
+\end{align}
+\]</span></p>
+<p>by equation (7)</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{11.2}
+    = \frac{\partial}{\partial\theta_1}[\frac{1}{1 + \bar{\rho}}]
+\end{align}
+\]</span></p>
+<p>Since <span class="math inline">\(\theta_1\)</span> isn’t present, we are taking a derivative of a constant</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{11.3}
+    \frac{\partial^2 f}{\partial\theta_1\partial\theta_4} = 0
+\end{align}
+\]</span></p>
+</details>
+</div>
+<div id="derivative-fracpartialpartial-bartheta_2fracpartial-fpartial-bartheta_2" class="section level3">
+<h3>Derivative: <span class="math inline">\(\frac{\partial}{\partial \bar{\theta_2}}[\frac{\partial f}{\partial \bar{\theta_2}}]\)</span></h3>
+<span class="math display">\[
+\begin{align}
+    \tag{12}
+    \frac{\partial^2 f}{\partial \bar{\theta_2}^2}=\frac{\theta_4-\theta_1}{(1 + \bar{\rho})^{2}}\cdot\frac{\partial \bar{\rho}}{\partial\bar{\theta_2}}\cdot\ln(10)\cdot\theta_3\cdot(1 - \frac{2\bar\rho}{1+\bar\rho})
+\end{align}
+\]</span>
+<details>
+<p><summary>proof</summary></p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{12.1}
+    \frac{\partial^2 f}{\partial \bar{\theta_2}^2}=\frac{\partial}{\partial \bar{\theta_2}}[\frac{\partial f}{\partial \bar{\theta_2}}]
+\end{align}
+\]</span></p>
+<p>by equation (5)</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{12.2}
+    =\frac{\partial}{\partial\bar{\theta_2}}[\frac{\theta_4 - \theta_1}{(1 + \bar{\rho})^2}\cdot \ln(10)\cdot\bar{\rho}\cdot\theta_3]
+\end{align}
+\]</span></p>
+<p>First, I will redistribute constants outside the derivative</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{12.3}
+    =(\theta_4-\theta_1)\cdot\ln(10)\cdot\theta_3\cdot\frac{\partial}{\partial\bar{\theta_2}}[\bar{\rho}\cdot(1+\bar{\rho})^{-2}]
+\end{align}
+\]</span></p>
+<p>by the product rule</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{12.4}
+    =(\theta_4-\theta_1)\cdot\ln(10)\cdot\theta_3\cdot(\frac{\partial \bar{\rho}}{\partial\bar{\theta_2}}\cdot(1 + \bar{\rho})^{-2} + \bar{\rho}\cdot\frac{\partial}{\partial\bar{\theta_2}}[(1 + \bar{\rho})^{-2}])
+\end{align}
+\]</span></p>
+<p>following the chain rule and power rule</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{12.5}
+    =(\theta_4-\theta_1)\cdot\ln(10)\cdot\theta_3\cdot(\frac{\partial \bar{\rho}}{\partial\bar{\theta_2}}\cdot\frac{1}{(1 + \bar{\rho})^{2}} - \frac{2\bar\rho}{(1+\bar\rho)^3}\cdot\frac{\partial \bar{\rho}}{\partial\bar{\theta_2}})
+\end{align}
+\]</span></p>
+<p>We will then redistribute</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{12.6}
+    =\frac{\theta_4-\theta_1}{(1 + \bar{\rho})^{2}}\cdot\frac{\partial \bar{\rho}}{\partial\bar{\theta_2}}\cdot\ln(10)\cdot\theta_3\cdot(1 - \frac{2\bar\rho}{1+\bar\rho})
+\end{align}
+\]</span></p>
+</details>
+</div>
+<div id="derivative-fracpartialpartial-bartheta_2fracpartial-fpartialtheta_3" class="section level3">
+<h3>Derivative: <span class="math inline">\(\frac{\partial}{\partial \bar{\theta_2}}[\frac{\partial f}{\partial\theta_3}]\)</span></h3>
+<p><span class="math display">\[
+\begin{align}
+    \tag{13}
+    \frac{\partial^2 f}{\partial \bar{\theta_2}\partial\theta_3}=\bar\rho\cdot\ln(10)\cdot\frac{\theta_4-\theta_1}{(1+\bar\rho)^2}(\frac{2(x-\bar\theta_2)}{1+\bar\rho}\cdot\frac{\partial\bar\rho}{\partial\bar\theta_2}+1 +\ln(10)\cdot\theta_3\cdot (x-\bar\theta_2))
+\end{align}
+\]</span></p>
+<details>
+<p><summary>proof</summary></p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{13.1}
+    \frac{\partial^2 f}{\partial \bar{\theta_2}\partial\theta_3}=\frac{\partial}{\partial \bar{\theta_2}}[\frac{\partial f}{\partial \theta_3}]
+\end{align}
+\]</span></p>
+<p>by equation (6)</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{13.2}
+    =\frac{\partial}{\partial \bar{\theta_2}}[-\frac{\theta_4 - \theta_1}{(1 + \bar{\rho})^2}\cdot  (x - \bar{\theta_2})\cdot\ln(10)\cdot\bar{\rho}]
+\end{align}
+\]</span></p>
+<p>redistribute constants outside the derivative</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{13.3}
+    =-\ln(10)\cdot(\theta_4-\theta_1)\cdot\frac{\partial}{\partial \bar{\theta_2}}[(1 + \bar{\rho})^{-2}\cdot  (x - \bar{\theta_2})\cdot\bar{\rho}]
+\end{align}
+\]</span></p>
+<p>using the product rule we receive</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{13.4}
+    =-\ln(10)\cdot(\theta_4-\theta_1)(\frac{\partial}{\partial \bar{\theta_2}}[(1 + \bar{\rho})^{-2}]\cdot(x - \bar{\theta_2})\cdot\bar{\rho} + \frac{\partial}{\partial \bar{\theta_2}}[x-\bar\theta_2]\cdot(1 + \bar{\rho})^{-2}\cdot\bar\rho + \frac{\partial\bar\rho}{\partial \bar{\theta_2}}\cdot(1 + \bar{\rho})^{-2}\cdot(x-\bar\theta_2))
+\end{align}
+\]</span></p>
+<p>simplifying the derivations</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{13.5}
+    =-\ln(10)\cdot(\theta_4-\theta_1)(-\frac{2\bar\rho(x-\bar\theta_2)}{(1+\bar\rho)^3}\cdot\frac{\partial\bar\rho}{\partial\bar\theta_2}-\frac{\bar\rho}{(1+\bar\rho)^2} + \frac{\partial\bar\rho}{\partial \bar{\theta_2}}\cdot\frac{x-\bar\theta_2}{(1 + \bar{\rho})^{2}})
+\end{align}
+\]</span></p>
+<p>In order to reduce further, we need to expand the <span class="math inline">\(\frac{\partial\bar\rho}{\partial\bar\theta_2}\)</span> term.</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{13.6}
+    =-\ln(10)\cdot(\theta_4-\theta_1)(-\frac{2\bar\rho(x-\bar\theta_2)}{(1+\bar\rho)^3}\cdot\frac{\partial\bar\rho}{\partial\bar\theta_2}-\frac{\bar\rho}{(1+\bar\rho)^2} -\ln(10)\cdot\bar{\rho}\cdot\theta_3\cdot\frac{x-\bar\theta_2}{(1 + \bar{\rho})^{2}})
+\end{align}
+\]</span></p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{13.6}
+    =\bar\rho\cdot\ln(10)\cdot\frac{\theta_4-\theta_1}{(1+\bar\rho)^2}(\frac{2(x-\bar\theta_2)}{1+\bar\rho}\cdot\frac{\partial\bar\rho}{\partial\bar\theta_2}+1 +\ln(10)\cdot\theta_3\cdot (x-\bar\theta_2))
+\end{align}
+\]</span></p>
+</details>
+</div>
+<div id="derivative-fracpartialpartial-bartheta_2fracpartial-fpartialtheta_4" class="section level3">
+<h3>Derivative: <span class="math inline">\(\frac{\partial}{\partial \bar{\theta_2}}[\frac{\partial f}{\partial\theta_4}]\)</span></h3>
+<p><span class="math display">\[
+\begin{align}
+    \tag{14}
+    \frac{\partial^2 f}{\partial \bar{\theta_2}\partial\theta_4}=\frac{\bar\rho\cdot\theta_3\cdot\ln(10)}{(1+\bar\rho)^2}
+\end{align}
+\]</span></p>
+<details>
+<p><summary>proof</summary></p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{14.1}
+    \frac{\partial^2 f}{\partial \bar{\theta_2}\partial\theta_4}=\frac{\partial}{\partial \bar{\theta_2}}[\frac{\partial f}{\partial \theta_4}]
+\end{align}
+\]</span></p>
+<p>by equation (7)</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{14.2}
+    = \frac{\partial}{\partial \bar{\theta_2}}[\frac{1}{1 + \bar{\rho}}]
+\end{align}
+\]</span></p>
+<p>by the power rule</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{14.3}
+    = -\frac{1}{(1+\bar\rho)^2}\cdot\frac{\partial\bar\rho}{\partial\bar\theta_2}
+\end{align}
+\]</span></p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{14.4}
+    =\frac{\bar\rho\cdot\theta_3\cdot\ln(10)}{(1+\bar\rho)^2}
+\end{align}
+\]</span></p>
+</details>
+</div>
+<div id="derivative-fracpartialpartial-theta_3fracpartial-fpartialtheta_3" class="section level3">
+<h3>Derivative: <span class="math inline">\(\frac{\partial}{\partial \theta_3}[\frac{\partial f}{\partial\theta_3}]\)</span></h3>
+<p><span class="math display">\[
+\begin{align}
+    \tag{15}
+    \frac{\partial^2 f}{\partial \theta_3^2} = -\frac{\theta_4 - \theta_1}{(1+\bar\rho)^2}\cdot(x - \bar{\theta_2})\cdot\ln(10)\cdot\frac{\partial\bar\rho}{\partial\theta_3}\cdot(1 - \frac{2\bar\rho}{1+\bar\rho})
+\end{align}
+\]</span></p>
+<details>
+<p><summary>proof</summary></p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{15.1}
+    \frac{\partial^2 f}{\partial \theta_3^2}=\frac{\partial}{\partial \theta_3}[\frac{\partial f}{\partial \theta_3}]
+\end{align}
+\]</span></p>
+<p>by equation (6)</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{15.2}
+    = \frac{\partial}{\partial \theta_3}[-\frac{\theta_4 - \theta_1}{(1 + \bar{\rho})^2}\cdot  (x - \bar{\theta_2})\cdot\ln(10)\cdot\bar{\rho}]
+\end{align}
+\]</span></p>
+<p>redistribute constants</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{15.3}
+    = -(\theta_4 - \theta_1)\cdot(x - \bar{\theta_2})\cdot\ln(10)\cdot\frac{\partial}{\partial \theta_3}[(1 + \bar{\rho})^{-2}\cdot  \bar{\rho}]
+\end{align}
+\]</span></p>
+<p>due to the product rule</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{15.4}
+    = -(\theta_4 - \theta_1)\cdot(x - \bar{\theta_2})\cdot\ln(10)\cdot(\bar\rho\cdot\frac{\partial}{\partial\theta_3}[(1+\bar\rho)^{-2}] + \frac{\partial\bar\rho}{\partial\theta_3}\cdot(1+\bar\rho)^{-2})
+\end{align}
+\]</span></p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{15.5}
+    = -(\theta_4 - \theta_1)\cdot(x - \bar{\theta_2})\cdot\ln(10)\cdot(-\frac{2\bar\rho}{(1+\bar\rho)^3}\cdot\frac{\partial\bar\rho}{\partial\theta_3} + \frac{\partial\bar\rho}{\partial\theta_3}\cdot\frac{1}{(1+\bar\rho)^2})
+\end{align}
+\]</span></p>
+<p>redistributing once more</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{15.6}
+    = -\frac{\theta_4 - \theta_1}{(1+\bar\rho)^2}\cdot(x - \bar{\theta_2})\cdot\ln(10)\cdot\frac{\partial\bar\rho}{\partial\theta_3}\cdot(1 - \frac{2\bar\rho}{1+\bar\rho})
+\end{align}
+\]</span></p>
+</details>
+</div>
+<div id="derivative-fracpartialpartial-theta_3fracpartial-fpartialtheta_4" class="section level3">
+<h3>Derivative: <span class="math inline">\(\frac{\partial}{\partial \theta_3}[\frac{\partial f}{\partial\theta_4}]\)</span></h3>
+<p><span class="math display">\[
+\begin{align}
+    \tag{16}
+    \frac{\partial^2 f}{\partial\theta_3\partial\theta_4} = - \frac{(x - \bar\theta_2)\cdot\ln(10)\cdot\bar\rho}{(1+\bar\rho)^2}
+\end{align}
+\]</span></p>
+<details>
+<p><summary>proof</summary></p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{16.1}
+    \frac{\partial^2 f}{\partial \theta_3\partial\theta_4}=\frac{\partial}{\partial \theta_3}[\frac{\partial f}{\partial \theta_4}]
+\end{align}
+\]</span></p>
+<p>by equation (7)</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{16.2}
+    = \frac{\partial}{\partial \theta_3}[\frac{1}{1 + \bar{\rho}}]
+\end{align}
+\]</span></p>
+<p>By the power rule and chain rule</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{16.3}
+    = \frac{1}{(1+\bar\rho)^2}\frac{\partial\bar\rho}{\partial \theta_3}
+\end{align}
+\]</span></p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{16.4}
+    = - \frac{(x - \bar\theta_2)\cdot\ln(10)\cdot\bar\rho}{(1+\bar\rho)^2}
+\end{align}
+\]</span></p>
+</details>
+</div>
+<div id="derivative-fracpartialpartial-theta_4fracpartial-fpartialtheta_4" class="section level3">
+<h3>Derivative: <span class="math inline">\(\frac{\partial}{\partial \theta_4}[\frac{\partial f}{\partial\theta_4}]\)</span></h3>
+<p><span class="math display">\[
+\begin{align}
+    \tag{17}
+    \frac{\partial^2 f}{\partial\theta_4^2} = 0
+\end{align}
+\]</span></p>
+<details>
+<p><summary>proof</summary></p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{16.1}
+    \frac{\partial^2 f}{\partial \theta_4^2}=\frac{\partial}{\partial \theta_4}[\frac{\partial f}{\partial \theta_4}]
+\end{align}
+\]</span></p>
+<p>by equation (7)</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{16.2}
+    = \frac{\partial}{\partial \theta_4}[\frac{1}{1 + \bar{\rho}}]
+\end{align}
+\]</span></p>
+<p>Since there is no <span class="math inline">\(\theta_4\)</span>, the terms are treated as constants</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{16.3}
+    = 0
+\end{align}
+\]</span></p>
+</details>
+</div>
+</div>
+<div id="second-derivative-theta_2" class="section level2">
+<h2>Second Derivative <span class="math inline">\(\theta_2\)</span></h2>
+<p>Some of the derivations for <span class="math inline">\(\theta_2\)</span> instead of <span class="math inline">\(\bar\theta_2\)</span> are similar to equations (9), (13) and (14) except that they are scaled by <span class="math inline">\(\frac{1}{\theta_2\ln(10)}\)</span>. Take the following as a general demonstration.</p>
+<p>for <span class="math inline">\(j = \langle 1,3,4\rangle\)</span> then</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{17}
+    \frac{\partial^2 f}{\partial \theta_j\partial\theta_2} = \frac{\partial \bar{\theta_2}}{\partial \theta_2}\cdot\frac{\partial}{\partial \theta_j}[\frac{\partial f}{\partial \bar{\theta_2}}]
+\end{align}
+\]</span></p>
+<details>
+<p><summary>proof</summary></p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{17.1}
+    \frac{\partial^2 f}{\partial \theta_j\partial\theta_2} = \frac{\partial}{\partial \theta_j}[\frac{\partial f}{\partial \theta_2}]
+\end{align}
+\]</span> by equation (8.1)</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{17.2}
+    = \frac{\partial}{\partial \theta_j}[\frac{\partial f}{\partial \bar{\theta_2}}\cdot\frac{\partial \bar{\theta_2}}{\partial \theta_2}]
+\end{align}
+\]</span></p>
+<p>by equation (8.1.1)</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{17.3}
+    = \frac{\partial}{\partial \theta_j}[\frac{\partial f}{\partial \bar{\theta_2}}\cdot\frac{1}{\theta_2\ln(10)}]
+\end{align}
+\]</span></p>
+<p>As long as <span class="math inline">\(\theta_j\)</span> is not <span class="math inline">\(\theta_2\)</span>, then we can treat <span class="math inline">\(\frac{1}{\theta_2\ln(10)}\)</span> as a constant. Since we have the solution for of <span class="math inline">\(\frac{\partial}{\partial \theta_j}[\frac{\partial f}{\partial \bar{\theta_2}}]\)</span> for when <span class="math inline">\(j = \langle 1,3,4\rangle\)</span> in equations (9), (13) and (14) respectively, The proof ends here.</p>
+</details>
+<p>The reason this doesn’t work for equation (12) is because we have an additional term to derivate with the product rule.</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{18}
+    \frac{\partial^2 f}{\partial\theta_2^2}=-\frac{\rho\cdot\theta_3\cdot(\theta_4-\theta_1)}{\theta_2^2\cdot(1 + \rho)^2}\cdot(1 +\theta_3 -\frac{2\cdot\theta_3\cdot\rho}{1+\rho})
+\end{align}
+\]</span></p>
+<details>
+<p><summary>proof</summary></p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{18.1}
+    \frac{\partial^2 f}{\partial \theta_2^2}=\frac{\partial}{\partial \theta_2}[\frac{\partial f}{\partial \theta_2}]
+\end{align}
+\]</span></p>
+<p>by equation (8)</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{18.2}
+    =\frac{\partial}{\partial\theta_2}[\frac{\theta_3}{\theta_2}\cdot\frac{\theta_4 - \theta_1}{(1 + \rho)^2}\cdot \rho]
+\end{align}
+\]</span></p>
+<p>redistribute constants</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{18.3}
+    =\theta_3\cdot(\theta_4-\theta_1)\cdot\frac{\partial}{\partial\theta_2}[\frac{1}{\theta_2}\cdot\frac{1}{(1 + \rho)^2}\cdot \rho]
+\end{align}
+\]</span></p>
+<p>by the product rule</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{18.4}
+    =\theta_3\cdot(\theta_4-\theta_1)\cdot(\frac{\partial}{\partial\theta_2}[\frac{1}{\theta_2}]\cdot\frac{\rho}{(1 + \rho)^2} + \frac{\partial}{\partial\theta_2}[\rho]\cdot\frac{1}{\theta_2\cdot(1+\rho)^2} +\frac{\partial}{\partial\theta_2}[\frac{1}{(1+\rho)^2}]\cdot\frac{\rho}{\theta_2})
+\end{align}
+\]</span></p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{18.5}
+    =\theta_3\cdot(\theta_4-\theta_1)\cdot(-\frac{\rho}{\theta_2^2\cdot(1 + \rho)^2} + \frac{\partial\rho}{\partial\theta_2}\cdot\frac{1}{\theta_2\cdot(1+\rho)^2} -\frac{2}{(1+\rho)^3}\cdot\frac{\rho}{\theta_2}\cdot\frac{\partial\rho}{\partial\theta_2})
+\end{align}
+\]</span></p>
+<p>given that</p>
+<p><span class="math display">\[
+\begin{align}
+  \frac{\partial\rho}{\partial\theta_2} = -\frac{\theta_3}{\theta_2}\cdot \rho
+\end{align}
+\]</span></p>
+<p>then</p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{18.6}
+    =\theta_3\cdot(\theta_4-\theta_1)\cdot(-\frac{\rho}{\theta_2^2\cdot(1 + \rho)^2} -\frac{\theta_3\cdot\rho}{\theta_2^2\cdot(1+\rho)^2} +\frac{2\cdot\theta_3\cdot\rho^2}{\theta_2^2\cdot(1+\rho)^3})
+\end{align}
+\]</span></p>
+<p><span class="math display">\[
+\begin{align}
+    \tag{18.7}
+    =-\frac{\rho\cdot\theta_3\cdot(\theta_4-\theta_1)}{\theta_2^2\cdot(1 + \rho)^2}\cdot(1 +\theta_3 -\frac{2\cdot\theta_3\cdot\rho}{1+\rho})
+\end{align}
+\]</span></p>
+</details>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

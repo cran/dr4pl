@@ -1,0 +1,1055 @@
+---
+title: "dr4pl derivatives"
+author: "Justin T. Landis and Alice Peng"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{dr4pl derivatives}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<style type="text/css">
+.section {
+  max-width: 940px;
+  padding-left: 15px;
+  padding-right: 15px;
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>
+
+This vignette is intended for the maintainer of the `dr4pl` package and to show how the first order and second order derivatives are calculated.
+
+<details><summary>The proof sections will sometimes make use of the following rules</summary>
+
+#### power rule
+
+$$
+\begin{align}
+  \tag{0.1}
+  \frac{\partial}{\partial x}[x^{n}] = n\cdot x ^{n-1}
+\end{align}
+$$
+
+#### product rule
+
+$$
+\begin{align}
+  \tag{0.2}
+  \frac{\partial}{\partial x}[g(x)\cdot h(x)] = \frac{\partial g}{\partial x}\cdot h(x) + g(x)\cdot \frac{\partial h}{\partial x}
+\end{align}
+$$
+
+#### chain rule
+
+$$
+\begin{align}
+  \tag{0.3}
+  \frac{\partial}{\partial x} [g(h(x))] = \frac{\partial g}{\partial h}\cdot\frac{\partial h}{\partial x}
+\end{align}
+$$
+
+#### Clairaut's Theorem
+
+Given $F(x,y)$ is defined on a plane that contains points (a,b), and $F_{xy}$ and $F_{yx}$ are continuous on that plane then: 
+$$
+\begin{align}
+  \tag{0.4}
+  \frac{\partial^2 F}{\partial x \partial y} = \frac{\partial^2 F}{\partial y \partial x}
+\end{align}
+$$
+</details>
+
+
+`dr4pl` is designed to optimise 4 parameters $\theta = \langle \theta_1, \theta_2, \theta_3, \theta_4\rangle$ where ${x, \theta_1, \theta_2,\theta_3} \in R$, and $\theta_2 > 0$. `dr4pl` takes in a `Dose` and `Response` values to optimize upon. Consider the following non-linear equation:
+
+$$
+\begin{align}
+  \tag{1}
+  f(x|\theta) = \theta_1 + \frac{\theta_4 - \theta_1}{1 + \rho}
+\end{align}
+$$
+
+
+$$
+\begin{align}
+\tag{1.1}\rho = (\frac{z(x)}{\theta_2})^{\theta_3}
+\end{align}
+$$
+
+where $$ z(x) = 10^x$$.
+
+For clairity, the parameter `Dose` as passed into `dr4pl()` is $z(x)$. $z(x)$ represents the linear dose level, and $x$ represents the $\log_{10}$ dose level.
+
+It is important to clairify that `dr4pl` is also constrained such that $\theta_1 > \theta_4$, thus forcing $\theta_1$ to be the `Upper Limit` and $\theta_4$ the `Lower Limit`. This also allows for consistency when examining the slope. Under these constraints the following is true:
+
+
+$$
+\begin{align}
+  \tag{2}
+\text{if }\theta_3 > 0, \text{ then} \lim_{x \to -\infty} f(x|\theta) = \theta_4, \lim_{x \to \infty} f(x|\theta) = \theta_1\\
+\text{if }\theta_3 < 0, \text{ then} \lim_{x \to -\infty} f(x|\theta) = \theta_1, \lim_{x \to \infty} f(x|\theta) = \theta_4
+\end{align}
+$$
+
+We can reparameterize (1) by solely working in the $\log_{10}$ space.
+
+$$
+\begin{align}
+  \tag{3}
+  \bar{f}(x|\bar{\theta}) = \theta_1 + \frac{\theta_4 - \theta_1}{1 + \bar{\rho}}
+\end{align}
+$$
+
+$$
+\begin{align}
+  \tag{3.1}
+  \bar{\rho} = 10^{\theta_3\cdot(x-\bar{\theta_2})}
+\end{align}
+$$
+
+where $\bar{\theta} = \langle\theta_1, \bar{\theta_2}, \theta_3, \theta_4\rangle$, $\bar{\theta_2} = \log_{10}\theta_2$ and $\bar{\theta_2} \in R$
+
+
+`dr4pl` performs its optimization on the equation (3), and will transform $\theta$ into $\bar{\theta}$ internally. Most parameters given to `dr4pl` are expected to be in the linear space in previous version, like for the arguments `init.parm`, `upperl` and `lowerl`. As of `dr4pl v2.0.0`, users can specify if the argument passed to `init.parm` is $\bar{\theta_2}$ with the `dr4pl_theta()` function and its `isLog10` logical argument. Prior to `dr4pl v2.0.0`, all statistics were calculated under the reparameterization of equation (3). This has caused a bit of confusion as `dr4pl` was not clear what it was reporting. For example, prior to `dr4pl v2.0.0`, confidence intervals were calculated on $\bar{\theta}$, but reported in linear space (the second parameter was exponentiated to make it more readable). In `dr4pl v2.0.0`, these parameters are reported in the same space they are calculated and labeled as such. To be consistent with the previous version the default will be to report $\bar{\theta}$. The user will be able to request statistics to be calculated on $\theta$ by passing the untransformed $\theta$ into the `theta` argument of various functions like `calculate()`, `confint()`, `residuals()`, `summary()` and `vcov()`. (`calculate(obj, theta = coef(obj)))`)
+
+In order to support this, the derivatives had to be rewritten to support dispatch on the `'dr4pl_param'` class.
+
+## First Derivatives of $\bar{f}(x|\bar{\theta})$
+
+I will start by defining the first derivatives of equation (3). This is because equation (3) and equation (1) are reparameterizations, their derivatives are almost identical except for when we derive with respects to either $\theta_2$ or $\bar{\theta_2}$. Equation (3) has slightly easier derivatives (imo). I will begin by first defining some partial derivatives that will be handy.
+
+
+$$
+\begin{align}
+  \tag{3.2}
+  \frac{\partial \bar{\rho}}{\partial \bar{\theta_2}} = -\ln(10)\cdot\bar{\rho}\cdot\theta_3
+\end{align}
+$$
+
+$$
+\begin{align}
+  \tag{3.3}
+  \frac{\partial \bar{\rho}}{\partial \bar{\theta_3}} = (x - \bar{\theta_2})\cdot\ln(10)\cdot\bar{\rho}
+\end{align}
+$$
+
+
+### Derivative: $\frac{\partial\bar{f}(x|\bar{\theta})}{\partial\theta_1}$
+
+$$
+\begin{align}
+  \tag{4}
+  \frac{\partial\bar{f}}{\partial\theta_1} = 1 - \frac{1}{1 + \bar{\rho}}
+\end{align}
+$$
+
+<details><summary>proof</summary>
+$$
+\begin{align}
+  \tag{4.1}
+  \frac{\partial\bar{f}}{\partial\theta_1} = \frac{\partial}{\partial\theta_1}(\theta_1 + \frac{\theta_4 - \theta_1}{1 + \bar{\rho}})
+\end{align}
+$$
+
+$$
+\begin{align}
+  \tag{4.2}
+  = \frac{\partial}{\partial\theta_1}\theta_1 + \frac{\partial}{\partial\theta_1}(\frac{\theta_4 - \theta_1}{1 + \bar{\rho}}))
+\end{align}
+$$
+$$
+\begin{align}
+  \tag{4.3}
+  \frac{\partial\bar{f}}{\partial\theta_1} = 1 - \frac{1}{1 + \bar{\rho}}
+\end{align}
+$$
+</details>
+
+
+### Derivative: $\frac{\partial\bar{f}(x|\bar{\theta})}{\partial\bar{\theta_2}}$
+
+$$
+\begin{align}
+  \tag{5}
+  \frac{\partial\bar{f}}{\partial\bar{\theta_2}} =\frac{\theta_4 - \theta_1}{(1 + \bar{\rho})^2}\cdot \ln(10)\cdot\bar{\rho}\cdot\theta_3
+\end{align}
+$$
+
+
+<details><summary>proof</summary>
+
+$$
+\begin{align}
+  \tag{5.1}
+  \frac{\partial\bar{f}}{\partial\bar{\theta_2}} = \frac{\partial}{\partial\bar{\theta_2}}[\theta_1 + \frac{\theta_4 - \theta_1}{1 + \bar{\rho}}]
+\end{align}
+$$
+
+we can rewrite the right hand side in the following manor by first removing the $\theta_1$ term and rewriting the quotient as a product.
+
+$$
+\begin{align}
+  \tag{5.2}
+   = \frac{\partial}{\partial\bar{\theta_2}}[(\theta_4 - \theta_1)\cdot(1 + \bar{\rho})^{-1}]
+\end{align}
+$$
+
+by the product rule:
+
+$$
+\begin{align}
+  \tag{5.3}
+  = \frac{\partial}{\partial\bar{\theta_2}}[\theta_4 - \theta_1]\cdot(1 + \bar{\rho})^{-1} + \frac{\partial}{\partial \bar{\theta_2}}[(1 + \bar{\rho})^{-1}]\cdot(\theta_4-\theta_1)
+\end{align}
+$$
+
+$$
+\begin{align}
+  \tag{5.4}
+   = 0 + \frac{\partial}{\partial \bar{\theta_2}}[(1 + \bar{\rho})^{-1}]\cdot(\theta_4-\theta_1)
+\end{align}
+$$
+
+by the power and chain rule we get
+
+$$
+\begin{align}
+  \tag{5.5}
+   = -(1 + \bar{\rho})^{-2}\cdot(\theta_4-\theta_1)\cdot \frac{\partial \bar{\rho}}{\partial \bar{\theta_2}}
+\end{align}
+$$
+
+$$
+\begin{align}
+  \tag{5.6}
+   = -\frac{\theta_4-\theta_1}{(1 + \bar{\rho})^{2}}\cdot \frac{\partial \bar{\rho}}{\partial \bar{\theta_2}}
+\end{align}
+$$
+
+by equation (3.2) we arrive at
+
+$$
+\begin{align}
+  \tag{5.7}
+  \frac{\partial\bar{f}}{\partial\bar{\theta_2}} =\frac{\theta_4 - \theta_1}{(1 + \bar{\rho})^2}\cdot \ln(10)\cdot\bar{\rho}\cdot\theta_3
+\end{align}
+$$
+
+</details>
+
+
+### Derivative: $\frac{\partial\bar{f}(x|\bar{\theta})}{\partial\theta_3}$
+
+$$
+\begin{align}
+  \tag{6}
+  \frac{\partial\bar{f}}{\partial\theta_3} = -\frac{\theta_4 - \theta_1}{(1 + \bar{\rho})^2}\cdot  (x - \bar{\theta_2})\cdot\ln(10)\cdot\bar{\rho}
+\end{align}
+$$
+
+<details><summary>proof</summary>
+
+The proof to equation 6 has the same steps in equations (5.1) - (5.6), except we are deriving with respects to $\theta_3$
+
+$$
+\begin{align}
+  \tag{6.1}
+  \frac{\partial\bar{f}}{\partial\theta_3} = \frac{\partial}{\partial\theta_3}[\theta_1 + \frac{\theta_4 - \theta_1}{1 + \bar{\rho}}]
+\end{align}
+$$
+
+we can rewrite the right hand side in the following manor by first removing the $\theta_1$ term and rewriting the quotient as a product.
+
+$$
+\begin{align}
+  \tag{6.2}
+   = \frac{\partial}{\partial\theta_3}[(\theta_4 - \theta_1)\cdot(1 + \bar{\rho})^{-1}]
+\end{align}
+$$
+
+by the product rule:
+
+$$
+\begin{align}
+  \tag{6.3}
+  = \frac{\partial}{\partial\theta_3}[\theta_4 - \theta_1]\cdot(1 + \bar{\rho})^{-1} + \frac{\partial}{\partial \theta_3}[(1 + \bar{\rho})^{-1}]\cdot(\theta_4-\theta_1)
+\end{align}
+$$
+
+$$
+\begin{align}
+  \tag{6.4}
+   = 0 + \frac{\partial}{\partial \theta_3}[(1 + \bar{\rho})^{-1}]\cdot(\theta_4-\theta_1)
+\end{align}
+$$
+
+by the power and chain rule we get
+
+$$
+\begin{align}
+  \tag{6.5}
+   = -(1 + \bar{\rho})^{-2}\cdot(\theta_4-\theta_1)\cdot \frac{\partial \bar{\rho}}{\partial \theta_3}
+\end{align}
+$$
+
+$$
+\begin{align}
+  \tag{6.6}
+   = -\frac{\theta_4-\theta_1}{(1 + \bar{\rho})^{2}}\cdot \frac{\partial \bar{\rho}}{\partial \theta_3}
+\end{align}
+$$
+
+by equation (3.3) we arrive at
+
+$$
+\begin{align}
+  \tag{6.7}
+  \frac{\partial\bar{f}}{\partial\theta_3} =-\frac{\theta_4 - \theta_1}{(1 + \bar{\rho})^2}\cdot(x - \bar{\theta_2})\cdot\ln(10)\cdot\bar{\rho}
+\end{align}
+$$
+
+</details>
+
+
+### Derivative: $\frac{\partial\bar{f}(x|\bar{\theta})}{\partial\theta_4}$
+
+$$
+\begin{align}
+  \tag{7}
+  \frac{\partial\bar{f}}{\partial\theta_4} = \frac{1}{1 + \bar{\rho}}
+\end{align}
+$$
+
+<details><summary>proof</summary>
+$$
+\begin{align}
+  \tag{7.1}
+  \frac{\partial\bar{f}}{\partial\theta_4} = \frac{\partial}{\partial\theta_4}(\theta_1 + \frac{\theta_4 - \theta_1}{1 + \bar{\rho}})
+\end{align}
+$$
+
+$$
+\begin{align}
+  \tag{7.2}
+  = \frac{\partial}{\partial\theta_4}\theta_1 + \frac{\partial}{\partial\theta_4}(\frac{\theta_4 - \theta_1}{1 + \bar{\rho}}))
+\end{align}
+$$
+$$
+\begin{align}
+  \tag{7.3}
+  \frac{\partial\bar{f}}{\partial\theta_4} = \frac{1}{1 + \bar{\rho}}
+\end{align}
+$$
+</details>
+
+
+
+
+## Derivatives of $f(x|\theta)$
+
+As I mentioned in the previous section, may of the partial derivatives are the same, so I will not specify them again. In fact, the only derivative that is different is when deriving with respects to $\theta_2$ as opposed to $\bar{\theta_2}$. I want to clairify that $\bar{\rho} = \rho$ and that I only make the distinction to communicate which space we are in.
+
+The solution is extremely close to equation (5)
+
+$$
+\begin{align}
+  \tag{8}
+  \frac{\partial f}{\partial\theta_2} =\frac{\theta_3}{\theta_2}\cdot\frac{\theta_4 - \theta_1}{(1 + \rho)^2}\cdot \rho
+\end{align}
+$$
+
+<details><summary>proof</summary>
+
+$$
+\begin{align}
+  \tag{8.1}
+  \frac{\partial f}{\partial\theta_2} = \frac{\partial f}{\partial \bar{\theta_2}}\cdot\frac{\partial \bar{\theta_2}}{\partial \theta_2}
+\end{align}
+$$
+
+$$
+\begin{align}
+  \tag{8.1.1}
+  \frac{\partial \bar{\theta_2}}{\partial \theta_2} = \log_{10} e \cdot \frac{1}{\theta_2} = \frac{1}{\ln10\cdot\theta_2}
+\end{align}
+$$
+
+and by equation (5) we arrive at
+
+$$
+\begin{align}
+  \tag{8.2}
+  \frac{\partial f}{\partial\theta_2} = \frac{\partial f}{\partial \bar{\theta_2}}\cdot\frac{\partial \bar{\theta_2}}{\partial \theta_2}
+\end{align}
+$$
+
+$$
+\begin{align}
+  \tag{8.3}
+  = \frac{\theta_4 - \theta_1}{(1 + \bar{\rho})^2}\cdot \ln(10)\cdot\bar{\rho}\cdot\theta_3\cdot\frac{1}{\ln10\cdot\theta_2}
+\end{align}
+$$
+
+$$
+\begin{align}
+=\frac{\theta_3}{\theta_2}\cdot\frac{\theta_4 - \theta_1}{(1 + \rho)^2}\cdot \rho
+\end{align}
+$$
+
+</details>
+
+
+
+
+
+
+## Second Derivatives of $\bar{f}(x|\bar{\theta})$
+
+Due to the equivalence of equation (0.4), we do not need to compute all the the partial derivatives, only 10 of the 16 combinations. Again, I will start with equation (3) and then show the differences with equation (1) when applicable. This only is necessary when working with $\bar{\theta_2}$ which would otherwise be $\theta_2$ if using equation (1).
+
+Again, to make computation easier lets remember the partial derivatives of $\bar{\rho}$, specifically equation (3.2) and (3.3).
+
+for brevity, I will refer to equation (3) via $f$ instead of $\bar{f}$
+
+### Derivative: $\frac{\partial}{\partial \theta_1}[\frac{\partial f}{\partial \theta_1}]$
+
+$$
+\begin{align}
+  \tag{8}
+  \frac{\partial^2 f}{\partial \theta_1^2} = 0
+\end{align}
+$$
+
+<details><summary>proof</summary>
+
+$$
+\begin{align}
+  \tag{8.1}
+  \frac{\partial^2 f}{\partial \theta_1^2} = \frac{\partial}{\partial \theta_1}[\frac{\partial f}{\partial \theta_1}]
+\end{align}
+$$
+
+$$
+\begin{align}
+  \tag{8.2}
+  = \frac{\partial}{\partial \theta_1}[1 - \frac{1}{1 + \bar{\rho}}]
+\end{align}
+$$
+
+$$
+\begin{align}
+  \tag{8.3}
+  = 0
+\end{align}
+$$
+
+</details>
+
+
+### Derivative: $\frac{\partial}{\partial \theta_1}[\frac{\partial f}{\partial \bar{\theta_2}}]$
+
+$$
+\begin{align}
+  \tag{9}
+  \frac{\partial^2 f}{\partial \theta_1\partial\bar{\theta_2}} = \frac{\partial \bar{\rho}}{\partial\bar{\theta_2}}\cdot\frac{1}{(1+\bar{\rho})^2}
+\end{align}
+$$
+
+<details><summary>proof</summary>
+$$
+\begin{align}
+	\tag{9.1}
+	\frac{\partial^2 f}{\partial \theta_1\partial\bar{\theta_2}} = \frac{\partial}{\partial \theta_1}[\frac{\partial f}{\partial \bar{\theta_2}}]
+\end{align}
+$$
+
+by equation (5.6)
+
+$$
+\begin{align}
+	\tag{9.2}
+	= \frac{\partial}{\partial \theta_1}[-\frac{\theta_4-\theta_1}{(1 + \bar{\rho})^{2}}\cdot \frac{\partial \bar{\rho}}{\partial \bar{\theta_2}}]
+\end{align}
+$$
+
+Since neither equation (3.2)  nor $\bar{\rho}$ depends on $\theta_1$, we can treat them as a constants
+
+$$
+\begin{align}
+	\tag{9.3}
+	= -\frac{1}{(1+\bar{\rho})^2}\cdot \frac{\partial \bar{\rho}}{\partial \bar{\theta_2}}\cdot\frac{\partial}{\partial \theta_1}[\theta_4-\theta_1]
+\end{align}
+$$
+
+$$
+\begin{align}
+	\tag{9.4}
+  = \frac{\partial \bar{\rho}}{\partial\bar{\theta_2}}\cdot\frac{1}{(1+\bar{\rho})^2}
+\end{align}
+$$
+
+</details>
+
+### Derivative: $\frac{\partial}{\partial \theta_1}[\frac{\partial f}{\partial \theta_3}]$
+
+$$
+\begin{align}
+	\tag{10}
+	\frac{\partial^2 f}{\partial\theta_1\partial\theta_3} = \frac{\partial\bar{\rho}}{\partial\theta_3}\cdot\frac{1}{(1+\bar{\rho})^2}
+\end{align}
+$$
+
+<details><summary>proof</summary>
+
+$$
+\begin{align}
+	\tag{10.1}
+	\frac{\partial^2 f}{\partial\theta_1\partial\theta_3} = \frac{\partial}{\partial\theta_1}[\frac{\partial f}{\partial\theta_3}]
+\end{align}
+$$
+
+by equation (6.6)
+
+$$
+\begin{align}
+	\tag{10.2}
+	=\frac{\partial}{\partial\theta_1}[-\frac{\theta_4-\theta_1}{(1 + \bar{\rho})^{2}}\cdot \frac{\partial \bar{\rho}}{\partial \theta_3}]
+\end{align}
+$$
+
+by similar logic shown in 9.2-9.3, we can rewrite constants
+
+$$
+\begin{align}
+	\tag{10.2}
+	=-\frac{1}{(1 + \bar{\rho})^{2}}\cdot \frac{\partial \bar{\rho}}{\partial \theta_3}\cdot\frac{\partial}{\partial\theta_1}[\theta_4-\theta_1]
+\end{align}
+$$
+
+$$
+\begin{align}
+	\tag{10.3}
+	= \frac{\partial\bar{\rho}}{\partial\theta_3}\cdot\frac{1}{(1+\bar{\rho})^2}
+\end{align}
+$$
+
+</details>
+
+### Derivative: $\frac{\partial}{\partial \theta_1}[\frac{\partial f}{\partial \theta_4}]$
+
+$$
+\begin{align}
+	\tag{11}
+	\frac{\partial^2 f}{\partial\theta_1\partial\theta_4} = 0
+\end{align}
+$$
+
+<details><summary>proof</summary>
+
+$$
+\begin{align}
+	\tag{11.1}
+	\frac{\partial^2 f}{\partial\theta_1\partial\theta_4} = \frac{\partial}{\partial\theta_1}[\frac{\partial f}{\partial\theta_4}]
+\end{align}
+$$
+
+by equation (7)
+
+$$
+\begin{align}
+	\tag{11.2}
+	= \frac{\partial}{\partial\theta_1}[\frac{1}{1 + \bar{\rho}}]
+\end{align}
+$$
+
+Since $\theta_1$ isn't present, we are taking a derivative of a constant
+
+$$
+\begin{align}
+	\tag{11.3}
+	\frac{\partial^2 f}{\partial\theta_1\partial\theta_4} = 0
+\end{align}
+$$
+
+</details>
+
+### Derivative: $\frac{\partial}{\partial \bar{\theta_2}}[\frac{\partial f}{\partial \bar{\theta_2}}]$
+
+
+$$
+\begin{align}
+	\tag{12}
+	\frac{\partial^2 f}{\partial \bar{\theta_2}^2}=\frac{\theta_4-\theta_1}{(1 + \bar{\rho})^{2}}\cdot\frac{\partial \bar{\rho}}{\partial\bar{\theta_2}}\cdot\ln(10)\cdot\theta_3\cdot(1 - \frac{2\bar\rho}{1+\bar\rho})
+\end{align}
+$$
+<details><summary>proof</summary>
+
+$$
+\begin{align}
+	\tag{12.1}
+	\frac{\partial^2 f}{\partial \bar{\theta_2}^2}=\frac{\partial}{\partial \bar{\theta_2}}[\frac{\partial f}{\partial \bar{\theta_2}}]
+\end{align}
+$$
+
+by equation (5)
+
+$$
+\begin{align}
+	\tag{12.2}
+	=\frac{\partial}{\partial\bar{\theta_2}}[\frac{\theta_4 - \theta_1}{(1 + \bar{\rho})^2}\cdot \ln(10)\cdot\bar{\rho}\cdot\theta_3]
+\end{align}
+$$
+
+First, I will redistribute constants outside the derivative
+
+$$
+\begin{align}
+	\tag{12.3}
+	=(\theta_4-\theta_1)\cdot\ln(10)\cdot\theta_3\cdot\frac{\partial}{\partial\bar{\theta_2}}[\bar{\rho}\cdot(1+\bar{\rho})^{-2}]
+\end{align}
+$$
+
+by the product rule
+
+$$
+\begin{align}
+	\tag{12.4}
+	=(\theta_4-\theta_1)\cdot\ln(10)\cdot\theta_3\cdot(\frac{\partial \bar{\rho}}{\partial\bar{\theta_2}}\cdot(1 + \bar{\rho})^{-2} + \bar{\rho}\cdot\frac{\partial}{\partial\bar{\theta_2}}[(1 + \bar{\rho})^{-2}])
+\end{align}
+$$
+
+following the chain rule and power rule
+
+$$
+\begin{align}
+	\tag{12.5}
+	=(\theta_4-\theta_1)\cdot\ln(10)\cdot\theta_3\cdot(\frac{\partial \bar{\rho}}{\partial\bar{\theta_2}}\cdot\frac{1}{(1 + \bar{\rho})^{2}} - \frac{2\bar\rho}{(1+\bar\rho)^3}\cdot\frac{\partial \bar{\rho}}{\partial\bar{\theta_2}})
+\end{align}
+$$
+
+We will then redistribute 
+
+$$
+\begin{align}
+	\tag{12.6}
+	=\frac{\theta_4-\theta_1}{(1 + \bar{\rho})^{2}}\cdot\frac{\partial \bar{\rho}}{\partial\bar{\theta_2}}\cdot\ln(10)\cdot\theta_3\cdot(1 - \frac{2\bar\rho}{1+\bar\rho})
+\end{align}
+$$
+
+</details>
+
+
+
+
+
+
+### Derivative: $\frac{\partial}{\partial \bar{\theta_2}}[\frac{\partial f}{\partial\theta_3}]$
+
+
+$$
+\begin{align}
+	\tag{13}
+	\frac{\partial^2 f}{\partial \bar{\theta_2}\partial\theta_3}=\bar\rho\cdot\ln(10)\cdot\frac{\theta_4-\theta_1}{(1+\bar\rho)^2}(\frac{2(x-\bar\theta_2)}{1+\bar\rho}\cdot\frac{\partial\bar\rho}{\partial\bar\theta_2}+1 +\ln(10)\cdot\theta_3\cdot (x-\bar\theta_2))
+\end{align}
+$$
+
+
+<details><summary>proof</summary>
+
+$$
+\begin{align}
+	\tag{13.1}
+	\frac{\partial^2 f}{\partial \bar{\theta_2}\partial\theta_3}=\frac{\partial}{\partial \bar{\theta_2}}[\frac{\partial f}{\partial \theta_3}]
+\end{align}
+$$
+
+by equation (6)
+
+$$
+\begin{align}
+	\tag{13.2}
+	=\frac{\partial}{\partial \bar{\theta_2}}[-\frac{\theta_4 - \theta_1}{(1 + \bar{\rho})^2}\cdot  (x - \bar{\theta_2})\cdot\ln(10)\cdot\bar{\rho}]
+\end{align}
+$$
+
+redistribute constants outside the derivative
+
+$$
+\begin{align}
+	\tag{13.3}
+	=-\ln(10)\cdot(\theta_4-\theta_1)\cdot\frac{\partial}{\partial \bar{\theta_2}}[(1 + \bar{\rho})^{-2}\cdot  (x - \bar{\theta_2})\cdot\bar{\rho}]
+\end{align}
+$$
+
+using the product rule we receive
+
+$$
+\begin{align}
+	\tag{13.4}
+	=-\ln(10)\cdot(\theta_4-\theta_1)(\frac{\partial}{\partial \bar{\theta_2}}[(1 + \bar{\rho})^{-2}]\cdot(x - \bar{\theta_2})\cdot\bar{\rho} + \frac{\partial}{\partial \bar{\theta_2}}[x-\bar\theta_2]\cdot(1 + \bar{\rho})^{-2}\cdot\bar\rho + \frac{\partial\bar\rho}{\partial \bar{\theta_2}}\cdot(1 + \bar{\rho})^{-2}\cdot(x-\bar\theta_2))
+\end{align}
+$$
+
+simplifying the derivations
+
+$$
+\begin{align}
+	\tag{13.5}
+	=-\ln(10)\cdot(\theta_4-\theta_1)(-\frac{2\bar\rho(x-\bar\theta_2)}{(1+\bar\rho)^3}\cdot\frac{\partial\bar\rho}{\partial\bar\theta_2}-\frac{\bar\rho}{(1+\bar\rho)^2} + \frac{\partial\bar\rho}{\partial \bar{\theta_2}}\cdot\frac{x-\bar\theta_2}{(1 + \bar{\rho})^{2}})
+\end{align}
+$$
+
+In order to reduce further, we need to expand the $\frac{\partial\bar\rho}{\partial\bar\theta_2}$ term.
+
+$$
+\begin{align}
+	\tag{13.6}
+	=-\ln(10)\cdot(\theta_4-\theta_1)(-\frac{2\bar\rho(x-\bar\theta_2)}{(1+\bar\rho)^3}\cdot\frac{\partial\bar\rho}{\partial\bar\theta_2}-\frac{\bar\rho}{(1+\bar\rho)^2} -\ln(10)\cdot\bar{\rho}\cdot\theta_3\cdot\frac{x-\bar\theta_2}{(1 + \bar{\rho})^{2}})
+\end{align}
+$$
+
+$$
+\begin{align}
+	\tag{13.6}
+	=\bar\rho\cdot\ln(10)\cdot\frac{\theta_4-\theta_1}{(1+\bar\rho)^2}(\frac{2(x-\bar\theta_2)}{1+\bar\rho}\cdot\frac{\partial\bar\rho}{\partial\bar\theta_2}+1 +\ln(10)\cdot\theta_3\cdot (x-\bar\theta_2))
+\end{align}
+$$
+
+</details>
+
+
+
+
+
+
+
+### Derivative: $\frac{\partial}{\partial \bar{\theta_2}}[\frac{\partial f}{\partial\theta_4}]$
+
+
+$$
+\begin{align}
+	\tag{14}
+	\frac{\partial^2 f}{\partial \bar{\theta_2}\partial\theta_4}=\frac{\bar\rho\cdot\theta_3\cdot\ln(10)}{(1+\bar\rho)^2}
+\end{align}
+$$
+
+
+<details><summary>proof</summary>
+
+$$
+\begin{align}
+	\tag{14.1}
+	\frac{\partial^2 f}{\partial \bar{\theta_2}\partial\theta_4}=\frac{\partial}{\partial \bar{\theta_2}}[\frac{\partial f}{\partial \theta_4}]
+\end{align}
+$$
+
+by equation (7)
+
+$$
+\begin{align}
+	\tag{14.2}
+	= \frac{\partial}{\partial \bar{\theta_2}}[\frac{1}{1 + \bar{\rho}}]
+\end{align}
+$$
+
+by the power rule
+
+$$
+\begin{align}
+	\tag{14.3}
+	= -\frac{1}{(1+\bar\rho)^2}\cdot\frac{\partial\bar\rho}{\partial\bar\theta_2}
+\end{align}
+$$
+
+
+$$
+\begin{align}
+	\tag{14.4}
+	=\frac{\bar\rho\cdot\theta_3\cdot\ln(10)}{(1+\bar\rho)^2}
+\end{align}
+$$
+
+</details>
+
+
+### Derivative: $\frac{\partial}{\partial \theta_3}[\frac{\partial f}{\partial\theta_3}]$
+
+$$
+\begin{align}
+	\tag{15}
+	\frac{\partial^2 f}{\partial \theta_3^2} = -\frac{\theta_4 - \theta_1}{(1+\bar\rho)^2}\cdot(x - \bar{\theta_2})\cdot\ln(10)\cdot\frac{\partial\bar\rho}{\partial\theta_3}\cdot(1 - \frac{2\bar\rho}{1+\bar\rho})
+\end{align}
+$$
+
+<details><summary>proof</summary>
+
+$$
+\begin{align}
+	\tag{15.1}
+	\frac{\partial^2 f}{\partial \theta_3^2}=\frac{\partial}{\partial \theta_3}[\frac{\partial f}{\partial \theta_3}]
+\end{align}
+$$
+
+by equation (6)
+
+$$
+\begin{align}
+	\tag{15.2}
+	= \frac{\partial}{\partial \theta_3}[-\frac{\theta_4 - \theta_1}{(1 + \bar{\rho})^2}\cdot  (x - \bar{\theta_2})\cdot\ln(10)\cdot\bar{\rho}]
+\end{align}
+$$
+
+redistribute constants
+
+$$
+\begin{align}
+	\tag{15.3}
+	= -(\theta_4 - \theta_1)\cdot(x - \bar{\theta_2})\cdot\ln(10)\cdot\frac{\partial}{\partial \theta_3}[(1 + \bar{\rho})^{-2}\cdot  \bar{\rho}]
+\end{align}
+$$
+
+due to the product rule
+
+$$
+\begin{align}
+	\tag{15.4}
+	= -(\theta_4 - \theta_1)\cdot(x - \bar{\theta_2})\cdot\ln(10)\cdot(\bar\rho\cdot\frac{\partial}{\partial\theta_3}[(1+\bar\rho)^{-2}] + \frac{\partial\bar\rho}{\partial\theta_3}\cdot(1+\bar\rho)^{-2})
+\end{align}
+$$
+
+
+$$
+\begin{align}
+	\tag{15.5}
+	= -(\theta_4 - \theta_1)\cdot(x - \bar{\theta_2})\cdot\ln(10)\cdot(-\frac{2\bar\rho}{(1+\bar\rho)^3}\cdot\frac{\partial\bar\rho}{\partial\theta_3} + \frac{\partial\bar\rho}{\partial\theta_3}\cdot\frac{1}{(1+\bar\rho)^2})
+\end{align}
+$$
+
+redistributing once more
+
+$$
+\begin{align}
+	\tag{15.6}
+	= -\frac{\theta_4 - \theta_1}{(1+\bar\rho)^2}\cdot(x - \bar{\theta_2})\cdot\ln(10)\cdot\frac{\partial\bar\rho}{\partial\theta_3}\cdot(1 - \frac{2\bar\rho}{1+\bar\rho})
+\end{align}
+$$
+
+</details>
+
+### Derivative: $\frac{\partial}{\partial \theta_3}[\frac{\partial f}{\partial\theta_4}]$
+
+$$
+\begin{align}
+	\tag{16}
+	\frac{\partial^2 f}{\partial\theta_3\partial\theta_4} = - \frac{(x - \bar\theta_2)\cdot\ln(10)\cdot\bar\rho}{(1+\bar\rho)^2}
+\end{align}
+$$
+
+<details><summary>proof</summary>
+
+$$
+\begin{align}
+	\tag{16.1}
+	\frac{\partial^2 f}{\partial \theta_3\partial\theta_4}=\frac{\partial}{\partial \theta_3}[\frac{\partial f}{\partial \theta_4}]
+\end{align}
+$$
+
+by equation (7)
+
+$$
+\begin{align}
+	\tag{16.2}
+	= \frac{\partial}{\partial \theta_3}[\frac{1}{1 + \bar{\rho}}]
+\end{align}
+$$
+
+By the power rule and chain rule
+
+$$
+\begin{align}
+	\tag{16.3}
+	= \frac{1}{(1+\bar\rho)^2}\frac{\partial\bar\rho}{\partial \theta_3}
+\end{align}
+$$
+
+$$
+\begin{align}
+	\tag{16.4}
+	= - \frac{(x - \bar\theta_2)\cdot\ln(10)\cdot\bar\rho}{(1+\bar\rho)^2}
+\end{align}
+$$
+
+</details>
+
+### Derivative: $\frac{\partial}{\partial \theta_4}[\frac{\partial f}{\partial\theta_4}]$
+
+
+$$
+\begin{align}
+	\tag{17}
+	\frac{\partial^2 f}{\partial\theta_4^2} = 0
+\end{align}
+$$
+
+<details><summary>proof</summary>
+
+$$
+\begin{align}
+	\tag{16.1}
+	\frac{\partial^2 f}{\partial \theta_4^2}=\frac{\partial}{\partial \theta_4}[\frac{\partial f}{\partial \theta_4}]
+\end{align}
+$$
+
+by equation (7)
+
+$$
+\begin{align}
+	\tag{16.2}
+	= \frac{\partial}{\partial \theta_4}[\frac{1}{1 + \bar{\rho}}]
+\end{align}
+$$
+
+Since there is no $\theta_4$, the terms are treated as constants
+
+$$
+\begin{align}
+	\tag{16.3}
+	= 0
+\end{align}
+$$
+
+</details>
+
+
+## Second Derivative $\theta_2$
+
+Some of the derivations for $\theta_2$ instead of $\bar\theta_2$ are similar to equations (9), (13) and (14) except that they are scaled by $\frac{1}{\theta_2\ln(10)}$. Take the following as a general demonstration.
+
+for $j = \langle 1,3,4\rangle$ then
+
+$$
+\begin{align}
+	\tag{17}
+	\frac{\partial^2 f}{\partial \theta_j\partial\theta_2} = \frac{\partial \bar{\theta_2}}{\partial \theta_2}\cdot\frac{\partial}{\partial \theta_j}[\frac{\partial f}{\partial \bar{\theta_2}}]
+\end{align}
+$$
+
+<details><summary>proof</summary>
+
+$$
+\begin{align}
+	\tag{17.1}
+	\frac{\partial^2 f}{\partial \theta_j\partial\theta_2} = \frac{\partial}{\partial \theta_j}[\frac{\partial f}{\partial \theta_2}]
+\end{align}
+$$
+by equation (8.1) 
+
+$$
+\begin{align}
+	\tag{17.2}
+	= \frac{\partial}{\partial \theta_j}[\frac{\partial f}{\partial \bar{\theta_2}}\cdot\frac{\partial \bar{\theta_2}}{\partial \theta_2}]
+\end{align}
+$$
+
+by equation (8.1.1)
+
+$$
+\begin{align}
+	\tag{17.3}
+	= \frac{\partial}{\partial \theta_j}[\frac{\partial f}{\partial \bar{\theta_2}}\cdot\frac{1}{\theta_2\ln(10)}]
+\end{align}
+$$
+
+
+As long as $\theta_j$ is not $\theta_2$, then we can treat $\frac{1}{\theta_2\ln(10)}$ as a constant. Since we have the solution for of $\frac{\partial}{\partial \theta_j}[\frac{\partial f}{\partial \bar{\theta_2}}]$ for when $j = \langle 1,3,4\rangle$ in equations (9), (13) and (14) respectively, The proof ends here.
+
+</details>
+
+The reason this doesn't work for equation (12) is because we have an additional term to derivate with the product rule.
+
+
+$$
+\begin{align}
+	\tag{18}
+	\frac{\partial^2 f}{\partial\theta_2^2}=-\frac{\rho\cdot\theta_3\cdot(\theta_4-\theta_1)}{\theta_2^2\cdot(1 + \rho)^2}\cdot(1 +\theta_3 -\frac{2\cdot\theta_3\cdot\rho}{1+\rho})
+\end{align}
+$$
+
+<details><summary>proof</summary>
+
+$$
+\begin{align}
+	\tag{18.1}
+	\frac{\partial^2 f}{\partial \theta_2^2}=\frac{\partial}{\partial \theta_2}[\frac{\partial f}{\partial \theta_2}]
+\end{align}
+$$
+
+by equation (8)
+
+$$
+\begin{align}
+	\tag{18.2}
+	=\frac{\partial}{\partial\theta_2}[\frac{\theta_3}{\theta_2}\cdot\frac{\theta_4 - \theta_1}{(1 + \rho)^2}\cdot \rho]
+\end{align}
+$$
+
+redistribute constants
+
+$$
+\begin{align}
+	\tag{18.3}
+	=\theta_3\cdot(\theta_4-\theta_1)\cdot\frac{\partial}{\partial\theta_2}[\frac{1}{\theta_2}\cdot\frac{1}{(1 + \rho)^2}\cdot \rho]
+\end{align}
+$$
+
+by the product rule
+
+$$
+\begin{align}
+	\tag{18.4}
+	=\theta_3\cdot(\theta_4-\theta_1)\cdot(\frac{\partial}{\partial\theta_2}[\frac{1}{\theta_2}]\cdot\frac{\rho}{(1 + \rho)^2} + \frac{\partial}{\partial\theta_2}[\rho]\cdot\frac{1}{\theta_2\cdot(1+\rho)^2} +\frac{\partial}{\partial\theta_2}[\frac{1}{(1+\rho)^2}]\cdot\frac{\rho}{\theta_2})
+\end{align}
+$$
+
+
+$$
+\begin{align}
+	\tag{18.5}
+	=\theta_3\cdot(\theta_4-\theta_1)\cdot(-\frac{\rho}{\theta_2^2\cdot(1 + \rho)^2} + \frac{\partial\rho}{\partial\theta_2}\cdot\frac{1}{\theta_2\cdot(1+\rho)^2} -\frac{2}{(1+\rho)^3}\cdot\frac{\rho}{\theta_2}\cdot\frac{\partial\rho}{\partial\theta_2})
+\end{align}
+$$
+
+
+given that
+
+$$
+\begin{align}
+  \frac{\partial\rho}{\partial\theta_2} = -\frac{\theta_3}{\theta_2}\cdot \rho
+\end{align}
+$$
+
+then
+
+$$
+\begin{align}
+	\tag{18.6}
+	=\theta_3\cdot(\theta_4-\theta_1)\cdot(-\frac{\rho}{\theta_2^2\cdot(1 + \rho)^2} -\frac{\theta_3\cdot\rho}{\theta_2^2\cdot(1+\rho)^2} +\frac{2\cdot\theta_3\cdot\rho^2}{\theta_2^2\cdot(1+\rho)^3})
+\end{align}
+$$
+
+
+$$
+\begin{align}
+	\tag{18.7}
+	=-\frac{\rho\cdot\theta_3\cdot(\theta_4-\theta_1)}{\theta_2^2\cdot(1 + \rho)^2}\cdot(1 +\theta_3 -\frac{2\cdot\theta_3\cdot\rho}{1+\rho})
+\end{align}
+$$
+
+
+</details>
